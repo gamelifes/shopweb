@@ -53,16 +53,31 @@ jobs:
           for dir in /usr/local/lib/android/sdk /usr/local/share/android-sdk ~/Android/Sdk; do
             if [ -d "$dir" ]; then
               echo "Found: $dir"
-              ls -la "$dir/" 2>/dev/null | head -20
-              ls -la "$dir/platforms/" 2>/dev/null | head -10
-              ls -la "$dir/build-tools/" 2>/dev/null | head -10
+              ls -la "$dir/" 2>/dev/null
+              echo "--- platforms ---"
+              ls -la "$dir/platforms/" 2>/dev/null || echo "  (none)"
+              echo "--- build-tools ---"
+              ls -la "$dir/build-tools/" 2>/dev/null || echo "  (none)"
+              echo "--- cmdline-tools ---"
+              ls -la "$dir/cmdline-tools/" 2>/dev/null || echo "  (none)"
+            else
+              echo "Not found: $dir"
             fi
           done
 
       - name: Build Release APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --info 2>&1
+          ./gradlew assembleRelease --no-daemon --info 2>&1 | tee ../gradle-build.log
+          exit $?
+
+      - name: Upload Gradle Log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-log
+          path: gradle-build.log
+          retention-days: 7
 
       - name: List Generated APKs
         continue-on-error: true
