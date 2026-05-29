@@ -14,7 +14,6 @@ on:
 
 jobs:
   check-version:
-    if: github.actor == 'maotoumao' || github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       should_build: ${{ steps.version_check.outputs.should_build }}
