@@ -12,8 +12,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -82,12 +80,14 @@ jobs:
       - name: List Generated APKs
         continue-on-error: true
         run: |
-          echo "=== Generated APK files ==="
+          echo "=== Build output directory ==="
+          ls -laR android/app/build/outputs/ 2>/dev/null || echo "Directory not found"
+          echo "=== APK files ==="
           find android/app/build/outputs -name "*.apk" -exec ls -lh {} \; || echo "No APK files found"
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MusicFree-Local-APK
-          path: android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/**/*.apk
           retention-days: 30
