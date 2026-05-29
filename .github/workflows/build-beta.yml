@@ -62,12 +62,13 @@ jobs:
       - name: Build Release APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --info 2>&1 | tail -200
+          ./gradlew assembleRelease --no-daemon --info 2>&1
 
       - name: List Generated APKs
+        continue-on-error: true
         run: |
-          echo "Generated APK files:"
-          find android/app/build/outputs -name "*.apk" -exec ls -lh {} \;
+          echo "=== Generated APK files ==="
+          find android/app/build/outputs -name "*.apk" -exec ls -lh {} \; || echo "No APK files found"
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
