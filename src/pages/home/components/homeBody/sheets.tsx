@@ -48,23 +48,25 @@ export default function Sheets() {
                     onPress={() => {
                         setIndex(0);
                     }}>
-                    <ThemeText
-                        accessible={false}
-                        fontSize="title"
-                        style={[
-                            styles.tabText,
-                            index === 0 ? selectedTabTextStyle : null,
-                        ]}>
-                        {t("home.myPlaylists")}
-                    </ThemeText>
-                    <ThemeText
-                        accessible={false}
-                        fontColor="textSecondary"
-                        fontSize="subTitle"
-                        style={styles.tabText}>
-                        {" "}
-                        ({allSheets.length})
-                    </ThemeText>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <ThemeText
+                            accessible={false}
+                            fontSize="title"
+                            style={[
+                                styles.tabText,
+                                index === 0 ? selectedTabTextStyle : null,
+                            ]}>
+                            {t("home.myPlaylists")}
+                        </ThemeText>
+                        <ThemeText
+                            accessible={false}
+                            fontColor="textSecondary"
+                            fontSize="subTitle"
+                            style={styles.tabText}>
+                            {" "}
+                            ({allSheets.length})
+                        </ThemeText>
+                    </View>
                 </TouchableWithoutFeedback>
                 <TouchableWithoutFeedback
                     style={styles.tabContainer}
@@ -75,23 +77,25 @@ export default function Sheets() {
                     onPress={() => {
                         setIndex(1);
                     }}>
-                    <ThemeText
-                        fontSize="title"
-                        accessible={false}
-                        style={[
-                            styles.tabText,
-                            index === 1 ? selectedTabTextStyle : null,
-                        ]}>
-                        {t("home.starredPlaylists")}
-                    </ThemeText>
-                    <ThemeText
-                        fontColor="textSecondary"
-                        fontSize="subTitle"
-                        accessible={false}
-                        style={styles.tabText}>
-                        {" "}
-                        ({staredSheets.length})
-                    </ThemeText>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <ThemeText
+                            fontSize="title"
+                            accessible={false}
+                            style={[
+                                styles.tabText,
+                                index === 1 ? selectedTabTextStyle : null,
+                            ]}>
+                            {t("home.starredPlaylists")}
+                        </ThemeText>
+                        <ThemeText
+                            fontColor="textSecondary"
+                            fontSize="subTitle"
+                            accessible={false}
+                            style={styles.tabText}>
+                            {" "}
+                            ({staredSheets.length})
+                        </ThemeText>
+                    </View>
                 </TouchableWithoutFeedback>
                 <View style={styles.more}>
                     <IconButton
