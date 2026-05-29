@@ -41,7 +41,6 @@ function _MusicEditorItem(props: IMusicEditorItemProps) {
                     <CheckBox checked={editorMusicItem.checked} />
                 </View>
             )}
-            showMoreIcon={false}
             itemPaddingRight={rpx(100)}
             onItemPress={onPress}
         />

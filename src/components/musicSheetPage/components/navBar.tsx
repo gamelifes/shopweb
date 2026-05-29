@@ -14,16 +14,6 @@ export default function (props: INavBarProps) {
 
     return (
         <AppBar
-            actions={[
-                {
-                    icon: "magnifying-glass",
-                    onPress() {
-                        navigate(ROUTE_PATH.SEARCH_MUSIC_LIST, {
-                            musicList: musicList,
-                        });
-                    },
-                },
-            ]}
             menu={[
                 {
                     icon: "pencil-square",

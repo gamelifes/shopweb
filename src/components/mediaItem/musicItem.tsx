@@ -4,7 +4,6 @@ import rpx from "@/utils/rpx";
 import ListItem from "../base/listItem";
 
 import LocalMusicSheet from "@/core/localMusicSheet";
-import { showPanel } from "../panels/usePanel";
 import TitleAndTag from "./titleAndTag";
 import ThemeText from "../base/themeText";
 import TrackPlayer from "@/core/trackPlayer";
@@ -12,7 +11,6 @@ import Icon from "@/components/base/icon.tsx";
 
 interface IMusicItemProps {
     index?: string | number;
-    showMoreIcon?: boolean;
     musicItem: IMusic.IMusicItem;
     musicSheet?: IMusic.IMusicSheetItem;
     onItemPress?: (musicItem: IMusic.IMusicItem) => void;
@@ -28,9 +26,7 @@ export default function MusicItem(props: IMusicItemProps) {
         index,
         onItemPress,
         onItemLongPress,
-        musicSheet,
         itemPaddingRight,
-        showMoreIcon = true,
         left: Left,
         containerStyle,
         highlight = false,
@@ -90,19 +86,6 @@ export default function MusicItem(props: IMusicItemProps) {
                     </View>
                 }
             />
-            {showMoreIcon ? (
-                <ListItem.ListItemIcon
-                    width={rpx(48)}
-                    position="none"
-                    icon="ellipsis-vertical"
-                    onPress={() => {
-                        showPanel("MusicItemOptions", {
-                            musicItem,
-                            musicSheet,
-                        });
-                    }}
-                />
-            ) : null}
         </ListItem>
     );
 }

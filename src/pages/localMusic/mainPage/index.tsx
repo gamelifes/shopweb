@@ -17,16 +17,6 @@ export default function MainPage() {
         <>
             <AppBar
                 withStatusBar
-                actions={[
-                    {
-                        icon: "magnifying-glass",
-                        onPress() {
-                            navigate(ROUTE_PATH.SEARCH_MUSIC_LIST, {
-                                musicList: LocalMusicSheet.getMusicList(),
-                            });
-                        },
-                    },
-                ]}
                 menu={[
                     {
                         icon: "magnifying-glass",
@@ -72,13 +62,6 @@ export default function MainPage() {
                                     id: localMusicSheetId,
                                 },
                             });
-                        },
-                    },
-                    {
-                        icon: "arrow-down-tray",
-                        title: t("localMusic.downloadList"),
-                        async onPress() {
-                            navigate(ROUTE_PATH.DOWNLOADING);
                         },
                     },
                 ]}>

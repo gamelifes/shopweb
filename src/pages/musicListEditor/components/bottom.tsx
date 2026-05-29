@@ -2,7 +2,6 @@ import Icon, { IIconName } from "@/components/base/icon.tsx";
 import ThemeText from "@/components/base/themeText";
 import { showPanel } from "@/components/panels/usePanel";
 import { iconSizeConst } from "@/constants/uiConst";
-import downloader from "@/core/downloader";
 import { useI18N } from "@/core/i18n";
 import { useParams } from "@/core/router";
 import TrackPlayer from "@/core/trackPlayer";
@@ -60,19 +59,6 @@ export default function Bottom() {
                         showPanel("AddToMusicSheet", {
                             musicItem: selectedItems,
                         });
-                        resetSelectedIndices();
-                    }
-                }}
-            />
-            <BottomIcon
-                icon="arrow-down-tray"
-                title={t("common.download")}
-                onPress={() => {
-                    if (selectedItems.length) {
-                        downloader.download(selectedItems);
-                        Toast.success(
-                            t("toast.beginDownload"),
-                        );
                         resetSelectedIndices();
                     }
                 }}

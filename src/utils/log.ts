@@ -2,7 +2,6 @@ import { fileAsyncTransport, logger } from "react-native-logs";
 import RNFS, { readDir, readFile } from "react-native-fs";
 import pathConst from "@/constants/pathConst";
 import Config from "../core/appConfig.ts";
-import { addLog } from "@/lib/react-native-vdebug/src/log";
 
 const config = {
     transport: fileAsyncTransport,
@@ -111,7 +110,7 @@ export function devLog(
     ...args: any[]
 ) {
     if (Config.getConfig("debug.devLog")) {
-        addLog(method, args);
+        console[method](...args);
     }
 }
 

@@ -1,36 +1,22 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import rpx from "@/utils/rpx";
 
-import LocalMusicSheet from "@/core/localMusicSheet";
-import { ROUTE_PATH } from "@/core/router";
 import { ImgAsset } from "@/constants/assetsConst";
 import Toast from "@/utils/toast";
-import toast from "@/utils/toast";
 import useOrientation from "@/hooks/useOrientation";
 import { showPanel } from "@/components/panels/usePanel";
 import TrackPlayer, { useCurrentMusic, useMusicQuality } from "@/core/trackPlayer";
-import { iconSizeConst } from "@/constants/uiConst";
 import PersistStatus from "@/utils/persistStatus";
 import HeartIcon from "../heartIcon";
-import Icon from "@/components/base/icon.tsx";
-import PluginManager from "@/core/pluginManager";
-import downloader from "@/core/downloader";
 import i18n from "@/core/i18n";
 
 export default function Operations() {
     const musicItem = useCurrentMusic();
     const currentQuality = useMusicQuality();
-    const isDownloaded = LocalMusicSheet.useIsLocal(musicItem);
 
     const rate = PersistStatus.useValue("music.rate", 100);
     const orientation = useOrientation();
-
-    const supportComment = useMemo(() => {
-        return !musicItem
-            ? false
-            : !!PluginManager.getByMedia(musicItem)?.supportedMethods.has("getMusicComments");
-    }, [musicItem]);
 
     return (
         <View
@@ -60,22 +46,6 @@ export default function Operations() {
                     style={styles.quality}
                 />
             </Pressable>
-            <Icon
-                name={isDownloaded ? "check-circle-outline" : "arrow-down-tray"}
-                size={iconSizeConst.normal}
-                color="white"
-                onPress={() => {
-                    if (musicItem && !isDownloaded) {
-                        showPanel("MusicQuality", {
-                            type: "download",
-                            musicItem,
-                            async onQualityPress(quality) {
-                                downloader.download(musicItem, quality);
-                            },
-                        });
-                    }
-                }}
-            />
             <Pressable
                 onPress={() => {
                     if (!musicItem) {
@@ -94,36 +64,6 @@ export default function Operations() {
                 }}>
                 <Image source={ImgAsset.rate[rate!]} style={styles.quality} />
             </Pressable>
-            <Icon
-                name="chat-bubble-oval-left-ellipsis"
-                size={iconSizeConst.normal}
-                color="white"
-                opacity={supportComment ? 1 : 0.2}
-                onPress={() => {
-                    if (!supportComment) {
-                        toast.warn(i18n.t("toast.commmentNotAvaliableForCurrentMusic"));
-                        return;
-                    }
-                    if (musicItem) {
-                        showPanel("MusicComment", {
-                            musicItem,
-                        });
-                    }
-                }}
-            />
-            <Icon
-                name="ellipsis-vertical"
-                size={iconSizeConst.normal}
-                color="white"
-                onPress={() => {
-                    if (musicItem) {
-                        showPanel("MusicItemOptions", {
-                            musicItem: musicItem,
-                            from: ROUTE_PATH.MUSIC_DETAIL,
-                        });
-                    }
-                }}
-            />
         </View>
     );
 }

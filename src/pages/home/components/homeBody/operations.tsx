@@ -11,20 +11,6 @@ export default function Operations() {
 
     const actionButtons = [
         {
-            iconName: "fire",
-            title: t("home.recommendSheet"),
-            action() {
-                navigate(ROUTE_PATH.RECOMMEND_SHEETS);
-            },
-        },
-        {
-            iconName: "trophy",
-            title: t("home.topList"),
-            action() {
-                navigate(ROUTE_PATH.TOP_LIST);
-            },
-        },
-        {
             iconName: "clock-outline",
             title: t("home.playHistory"),
             action() {

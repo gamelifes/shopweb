@@ -4,19 +4,16 @@ import { IInjectable } from "@/types/infra";
 import LyricParser, { IParsedLrcItem } from "@/utils/lrcParser";
 import { getMediaExtraProperty, patchMediaExtra } from "@/utils/mediaExtra";
 import { isSameMediaItem } from "@/utils/mediaUtils";
-import minDistance from "@/utils/minDistance";
 import { atom, getDefaultStore, useAtomValue } from "jotai";
-import { Plugin } from "./pluginManager";
 
 import pathConst from "@/constants/pathConst";
 import LyricUtil from "@/native/lyricUtil";
 import { checkAndCreateDir } from "@/utils/fileUtils";
 import PersistStatus from "@/utils/persistStatus";
 import CryptoJs from "crypto-js";
-import { unlink, writeFile } from "react-native-fs";
+import { readFile, unlink, writeFile } from "react-native-fs";
 import RNTrackPlayer, { Event } from "react-native-track-player";
 import { TrackPlayerEvents } from "@/core.defination/trackPlayer";
-import { IPluginManager } from "@/types/core/pluginManager";
 
 
 interface ILyricState {
@@ -40,7 +37,6 @@ class LyricManager implements IInjectable {
 
     private trackPlayer!: ITrackPlayer;
     private appConfig!: IAppConfig;
-    private pluginManager!: IPluginManager;
 
     private lyricParser: LyricParser | null = null;
 
@@ -53,10 +49,9 @@ class LyricManager implements IInjectable {
         return getDefaultStore().get(lyricStateAtom);
     }
 
-    injectDependencies(trackPlayerService: ITrackPlayer, appConfigService: IAppConfig, pluginManager: IPluginManager): void {
+    injectDependencies(trackPlayerService: ITrackPlayer, appConfigService: IAppConfig): void {
         this.trackPlayer = trackPlayerService;
         this.appConfig = appConfigService;
-        this.pluginManager = pluginManager;
     }
 
     setup() {
@@ -264,20 +259,8 @@ class LyricManager implements IInjectable {
                 // 重置歌词状态
                 this.setLyricAsLoadingState();
 
-                lrcSource = (await this.pluginManager.getByMedia(currentMusicItem)?.methods?.getLyric(currentMusicItem)) ?? null;
-            }
-
-            // 切换到其他歌曲了, 直接返回
-            if (!this.trackPlayer.isCurrentMusic(currentMusicItem)) {
-                return;
-            }
-
-            // 如果歌词源不存在，并且开启自动搜索歌词
-            if (!lrcSource && this.appConfig.getConfig("lyric.autoSearchLyric")) {
-                // 重置歌词状态
-                this.setLyricAsLoadingState();
-
-                lrcSource = await this.searchSimilarLyric(currentMusicItem);
+                // 尝试从本地文件读取歌词
+                lrcSource = await this.readLocalLyric(currentMusicItem);
             }
 
             // 切换到其他歌曲了, 直接返回
@@ -333,71 +316,30 @@ class LyricManager implements IInjectable {
     }
 
     /**
-     * 检索最接近的歌词
-     * @param musicItem 
-     * @returns 
+     * 从本地文件系统读取歌词
      */
-    private async searchSimilarLyric(musicItem: IMusic.IMusicItem) {
-        const keyword = musicItem.alias || musicItem.title;
-        const plugins = this.pluginManager.getSearchablePlugins("lyric");
+    private async readLocalLyric(musicItem: IMusic.IMusicItem): Promise<ILyric.ILyricSource | null> {
+        try {
+            const platformHash = CryptoJs.MD5(musicItem.platform).toString(CryptoJs.enc.Hex);
+            const idHash = CryptoJs.MD5(musicItem.id).toString(CryptoJs.enc.Hex);
+            const basePath = pathConst.localLrcPath + platformHash + "/" + idHash;
 
-        let distance = Infinity;
-        let minDistanceMusicItem;
-        let targetPlugin: Plugin | null = null;
+            const rawLrc = await readFile(basePath + ".lrc", "utf8");
+            let translation: string | undefined;
 
-        for (let plugin of plugins) {
-            // 如果插件不是当前音乐的插件，或者当前音乐不是正在播放的音乐，则跳过
-            if (
-                !this.trackPlayer.isCurrentMusic(musicItem)
-            ) {
-                return null;
+            try {
+                translation = await readFile(basePath + ".tran.lrc", "utf8");
+            } catch {
+                // 翻译歌词不存在，忽略
             }
 
-            if (plugin.name === musicItem.platform) {
-                // 如果插件是当前音乐的插件，则跳过
-                continue;
-            }
-
-            const results = await plugin.methods
-                .search(keyword, 1, "lyric")
-                .catch(() => null);
-
-            // 取前两个
-            const firstTwo = results?.data?.slice(0, 2) || [];
-
-            for (let item of firstTwo) {
-                if (
-                    item.title === keyword &&
-                    item.artist === musicItem.artist
-                ) {
-                    distance = 0;
-                    minDistanceMusicItem = item;
-                    targetPlugin = plugin;
-                    break;
-                } else {
-                    const dist =
-                        minDistance(keyword, musicItem.title) +
-                        minDistance(item.artist, musicItem.artist);
-                    if (dist < distance) {
-                        distance = dist;
-                        minDistanceMusicItem = item;
-                        targetPlugin = plugin;
-                    }
-                }
-            }
-
-            if (distance === 0) {
-                break;
-            }
+            return {
+                rawLrc,
+                translation,
+            };
+        } catch {
+            return null;
         }
-
-        if (minDistanceMusicItem && targetPlugin) {
-            return await targetPlugin.methods
-                .getLyric(minDistanceMusicItem)
-                .catch(() => null);
-        }
-
-        return null;
     }
 
 }

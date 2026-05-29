@@ -5,22 +5,22 @@ import ThemeText from "@/components/base/themeText";
 import { showDialog } from "@/components/dialogs/useDialog";
 import { showPanel } from "@/components/panels/usePanel";
 import { ImgAsset } from "@/constants/assetsConst";
-import { localPluginPlatform } from "@/constants/commonConst";
 import { useI18N } from "@/core/i18n";
 import MusicSheet, { useSheetsBase, useStarredSheets } from "@/core/musicSheet";
-import { ROUTE_PATH, useNavigate } from "@/core/router";
+import { ROUTE_PATH } from "@/core/router";
+import { localPluginPlatform } from "@/constants/commonConst";
 import useColors from "@/hooks/useColors";
 import rpx from "@/utils/rpx";
 import Toast from "@/utils/toast";
 import { FlashList } from "@shopify/flash-list";
 import React, { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { StyleSheet, View, TouchableWithoutFeedback } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 export default function Sheets() {
     const [index, setIndex] = useState(0);
     const colors = useColors();
-    const navigate = useNavigate();
+    const navigation = useNavigation<any>();
 
     const allSheets = useSheetsBase();
     const staredSheets = useStarredSheets();
@@ -103,14 +103,7 @@ export default function Sheets() {
                             showPanel("CreateMusicSheet");
                         }}
                     />
-                    <IconButton
-                        name="inbox-arrow-down"
-                        sizeType="normal"
-                        accessibilityLabel={t("home.importPlaylist.a11y")}
-                        onPress={() => {
-                            showPanel("ImportMusicSheet");
-                        }}
-                    />
+
                 </View>
             </View>
             <FlashList
@@ -130,15 +123,9 @@ export default function Sheets() {
                             heightType="big"
                             withHorizontalPadding
                             onPress={() => {
-                                if (isLocalSheet) {
-                                    navigate(ROUTE_PATH.LOCAL_SHEET_DETAIL, {
-                                        id: sheet.id,
-                                    });
-                                } else {
-                                    navigate(ROUTE_PATH.PLUGIN_SHEET_DETAIL, {
-                                        sheetInfo: sheet,
-                                    });
-                                }
+                                navigation.navigate(ROUTE_PATH.LOCAL_SHEET_DETAIL, {
+                                    id: sheet.id,
+                                });
                             }}>
                             <ListItem.ListItemImage
                                 uri={sheet.coverImg ?? sheet.artwork}

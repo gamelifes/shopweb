@@ -68,29 +68,6 @@ export default function LyricOperations(props: ILyricOperationsProps) {
                 }}
             />
 
-            <Icon
-                name="magnifying-glass"
-                size={iconSizeConst.normal}
-                color="white"
-                onPress={() => {
-                    const currentMusic = TrackPlayer.currentMusic;
-                    if (!currentMusic) {
-                        return;
-                    }
-                    // if (
-                    //     Config.get('setting.basic.associateLyricType') ===
-                    //     'input'
-                    // ) {
-                    //     showPanel('AssociateLrc', {
-                    //         musicItem: currentMusic,
-                    //     });
-                    // } else {
-                    showPanel("SearchLrc", {
-                        musicItem: currentMusic,
-                    });
-                    // }
-                }}
-            />
             <TranslationIcon
                 width={iconSizeConst.normal}
                 height={iconSizeConst.normal}
@@ -110,19 +87,6 @@ export default function LyricOperations(props: ILyricOperationsProps) {
                         !showTranslation,
                     );
                     scrollToCurrentLrcItem();
-                }}
-            />
-            <Icon
-                name="ellipsis-vertical"
-                size={iconSizeConst.normal}
-                color={"white"}
-                onPress={() => {
-                    const currentMusic = TrackPlayer.currentMusic;
-                    if (currentMusic) {
-                        showPanel("MusicItemLyricOptions", {
-                            musicItem: currentMusic,
-                        });
-                    }
                 }}
             />
         </View>

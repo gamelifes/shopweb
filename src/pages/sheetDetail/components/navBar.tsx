@@ -97,17 +97,6 @@ export default function () {
                             });
                         },
                     },
-                ]}
-                actions={[
-                    {
-                        icon: "magnifying-glass",
-                        onPress() {
-                            navigation.navigate(ROUTE_PATH.SEARCH_MUSIC_LIST, {
-                                musicList: musicSheet?.musicList,
-                                musicSheet: musicSheet,
-                            });
-                        },
-                    },
                 ]}>
                 {t("common.sheet")}
             </AppBar>
