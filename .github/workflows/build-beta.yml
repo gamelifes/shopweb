@@ -40,10 +40,29 @@ jobs:
       - name: Make Gradlew Executable
         run: chmod +x android/gradlew
 
+      - name: Diagnose Environment
+        run: |
+          echo "=== Node ==="
+          node --version
+          echo "=== Java ==="
+          java -version 2>&1
+          echo "=== Android SDK ==="
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          echo "=== SDK dirs ==="
+          for dir in /usr/local/lib/android/sdk /usr/local/share/android-sdk ~/Android/Sdk; do
+            if [ -d "$dir" ]; then
+              echo "Found: $dir"
+              ls -la "$dir/" 2>/dev/null | head -20
+              ls -la "$dir/platforms/" 2>/dev/null | head -10
+              ls -la "$dir/build-tools/" 2>/dev/null | head -10
+            fi
+          done
+
       - name: Build Release APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --parallel --build-cache
+          ./gradlew assembleRelease --no-daemon --info 2>&1 | tail -200
 
       - name: List Generated APKs
         run: |
