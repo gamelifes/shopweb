@@ -66,8 +66,8 @@ jobs:
       - name: Build Release APK
         run: |
           cd android
+          set -o pipefail
           ./gradlew assembleRelease --no-daemon --info 2>&1 | tee ../gradle-build.log
-          exit $?
 
       - name: Upload Gradle Log
         if: failure()
