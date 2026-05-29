@@ -36,23 +36,6 @@ export default function AboutSetting() {
                     resizeMode="contain"
                 />
                 <ThemeText style={style.margin}>软件作者: 猫头猫</ThemeText>
-                <ThemeText style={style.margin}>
-                    公众号: 【一只猫头猫】
-                </ThemeText>
-                <View style={style.contactContainer}>
-                    <ThemeText style={style.margin}>
-                        B站:{" "}
-                        <LinkText linkTo="https://space.bilibili.com/12866223">
-                            不想睡觉猫头猫
-                        </LinkText>
-                    </ThemeText>
-                    <ThemeText style={style.margin}>
-                        小红书:{" "}
-                        <LinkText linkTo="https://www.xiaohongshu.com/user/profile/5ce6085200000000050213a6?xsec_token=YBqVNCKP4kpvphpU5sZI8WC93c5JINc3NhGtRBymgKvuo%3D&xsec_source=app_share&xhsshare=CopyLink&appuid=5ce6085200000000050213a6&apptime=1747275535&share_id=faef5820564a43be80e5b77da887e4b9&share_channel=copy_link">
-                            一只猫头猫
-                        </LinkText>
-                    </ThemeText>
-                </View>
             </View>
             <ScrollView
                 contentContainerStyle={style.scrollViewContainer}
@@ -62,19 +45,7 @@ export default function AboutSetting() {
                     软件作者是<ThemeText fontWeight="bold">猫头猫</ThemeText>
                     🐱，不是猫头鹰🦉，也不是什么其他的奇奇怪怪。软件没有其他版本，如果你下载到了付费版/广告版/挂羊头卖狗肉版，那说明你被坏蛋骗了😒。
                 </ThemeText>
-                <ThemeText style={style.content}>
-                    软件相关信息会发布在公众号【
-                    <ThemeText fontWeight="bold">一只猫头猫</ThemeText>
-                    】中👇，也简单做了个
-                    <LinkText linkTo="https://musicfree.catcat.work">
-                        官方网站
-                    </LinkText>
-                    。（手机版和桌面版的）下载地址、使用方式、插件开发方式、常见问题都在站点中。
-                </ThemeText>
-                <Image
-                    source={ImgAsset.wechatChannel}
-                    style={style.wcChannel}
-                />
+
                 <Divider style={style.content} />
 
                 <ThemeText style={style.content}>
@@ -95,20 +66,13 @@ export default function AboutSetting() {
                     打包、二次分发时请保留代码出处：https://github.com/maotoumao/MusicFree
                 </ThemeText>
                 <ThemeText style={style.content}>
-                    4. 如果开源协议变更，将在此 Github 仓库更新，不另行通知
-                </ThemeText>
-                <ThemeText style={style.content}>
-                    代码已开源到{" "}
-                    <LinkText linkTo="https://github.com/maotoumao/MusicFree">
-                        Github
-                    </LinkText>
-                    ，如果打不开试试把链接中的 github 换成 gitcode。
+                    4. 如果开源协议变更，将在此仓库更新，不另行通知
                 </ThemeText>
 
                 <Divider style={style.content} />
 
                 <ThemeText style={style.content}>
-                    本软件需要通过插件来完成包括播放、搜索在内的大部分功能，如果你是从第三方下载的插件，
+                    本软件需要通过插件来完成包括播放、搜索在内的大部分功能，
                     <ThemeText fontWeight="bold">
                         请一定谨慎识别这些插件的安全性，保护好自己。（注意：插件以及插件可能产生的数据与本软件无关，请使用者合理合法使用。）
                     </ThemeText>
@@ -119,15 +83,6 @@ export default function AboutSetting() {
                         还请注意本软件只是个人的业余项目，距离稳定版也有很长一段距离。
                     </ThemeText>
                     如果你在找成熟稳定的音乐软件，可以考虑其他优秀的软件。当然我会一直维护，让它变得尽可能的完善一些。业余时间用爱发电，进度慢还请见谅。
-                </ThemeText>
-
-                <ThemeText style={style.content}>
-                    如果有问题或者建议，可以直接去 Github issue
-                    区留言，也可以去公众号【一只猫头猫】留言，也可以去{" "}
-                    <LinkText linkTo="https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=1XgzeY8LfIa&businessType=9&from=246610&biz=ka&mainSourceId=share&subSourceId=others&jumpsource=shorturl">
-                        QQ 频道
-                    </LinkText>{" "}
-                    发帖。
                 </ThemeText>
 
                 <ThemeText style={style.content}>
