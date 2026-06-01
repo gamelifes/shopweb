@@ -40,13 +40,13 @@ export default function MusicItem(props: IMusicItemProps) {
             leftPadding={index !== undefined ? 0 : undefined}
             rightPadding={itemPaddingRight}
             onLongPress={onItemLongPress}
-onPress={() => {
-    if (onItemPress) {
-        onItemPress(musicItem);
-    } else {
-        TrackPlayer.playWithReplacePlayList(musicItem, [musicItem]);
-    }
-}}>
+            onPress={() => {
+                if (onItemPress) {
+                    onItemPress(musicItem);
+                } else {
+                    TrackPlayer.playWithReplacePlayList(musicItem, [musicItem]);
+                }
+            }}>
             {Left ? <Left /> : null}
             {index !== undefined ? (
                 <ListItem.ListItemText
