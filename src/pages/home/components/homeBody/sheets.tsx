@@ -8,7 +8,6 @@ import { ImgAsset } from "@/constants/assetsConst";
 import { useI18N } from "@/core/i18n";
 import MusicSheet, { useSheetsBase, useStarredSheets } from "@/core/musicSheet";
 import { ROUTE_PATH } from "@/core/router";
-import { localPluginPlatform } from "@/constants/commonConst";
 import useColors from "@/hooks/useColors";
 import rpx from "@/utils/rpx";
 import Toast from "@/utils/toast";

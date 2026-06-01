@@ -2,8 +2,6 @@ import {
     internalFakeSoundKey,
     sortIndexSymbol,
     timeStampSymbol,
-    internalSerializeKey,
-    localPluginPlatform,
 } from "@/constants/commonConst";
 import { MusicRepeatMode } from "@/constants/repeatModeConst";
 import delay from "@/utils/delay";

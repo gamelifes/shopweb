@@ -3,12 +3,12 @@ import { ITrackPlayer } from "@/types/core/trackPlayer";
 import { IInjectable } from "@/types/infra";
 import LyricParser, { IParsedLrcItem } from "@/utils/lrcParser";
 import { getMediaExtraProperty, patchMediaExtra } from "@/utils/mediaExtra";
-import { isSameMediaItem } from "@/utils/mediaUtils";
+import { isSameMediaItem, getLocalPath } from "@/utils/mediaUtils";
 import { atom, getDefaultStore, useAtomValue } from "jotai";
 
 import pathConst from "@/constants/pathConst";
 import LyricUtil from "@/native/lyricUtil";
-import { checkAndCreateDir } from "@/utils/fileUtils";
+import { checkAndCreateDir, getDirectory, getFileName } from "@/utils/fileUtils";
 import PersistStatus from "@/utils/persistStatus";
 import CryptoJs from "crypto-js";
 import { readFile, unlink, writeFile } from "react-native-fs";
@@ -317,8 +317,10 @@ class LyricManager implements IInjectable {
 
     /**
      * 从本地文件系统读取歌词
+     * 优先从缓存目录读取，如果没找到则尝试在音乐文件同目录查找同名.lrc文件
      */
     private async readLocalLyric(musicItem: IMusic.IMusicItem): Promise<ILyric.ILyricSource | null> {
+        // 首先尝试从缓存目录读取（原有逻辑）
         try {
             const platformHash = CryptoJs.MD5(musicItem.platform).toString(CryptoJs.enc.Hex);
             const idHash = CryptoJs.MD5(musicItem.id).toString(CryptoJs.enc.Hex);
@@ -337,8 +339,55 @@ class LyricManager implements IInjectable {
                 rawLrc,
                 translation,
             };
-        } catch {
-            return null;
+        } catch (cacheError) {
+            // 如果缓存目录没找到，尝试在音乐文件同目录查找
+            try {
+                // 获取音乐文件的本地路径
+                const localPath = getLocalPath(musicItem);
+                if (!localPath) {
+                    return null;
+                }
+
+                // 获取文件所在目录和文件名（不含扩展名）
+                const dirPath = await getDirectory(localPath);
+                const fileName = await getFileName(localPath, true); // 不含扩展名
+                
+                if (!dirPath || !fileName) {
+                    return null;
+                }
+
+                // 构建歌词文件路径
+                const lyricFilePath = `${dirPath}/${fileName}.lrc`;
+                const translationFilePath = `${dirPath}/${fileName}.tran.lrc`;
+
+                // 读取原始歌词
+                let rawLrc: string | null = null;
+                try {
+                    rawLrc = await readFile(lyricFilePath, "utf8");
+                } catch {
+                    // 原始歌词文件不存在
+                }
+
+                // 读取翻译歌词
+                let translation: string | undefined;
+                try {
+                    translation = await readFile(translationFilePath, "utf8");
+                } catch {
+                    // 翻译歌词文件不存在，忽略
+                }
+
+                // 如果至少找到了原始歌词，则返回结果
+                if (rawLrc !== null) {
+                    return {
+                        rawLrc,
+                        translation,
+                    };
+                }
+
+                return null;
+            } catch (fallbackError) {
+                return null;
+            }
         }
     }
 
