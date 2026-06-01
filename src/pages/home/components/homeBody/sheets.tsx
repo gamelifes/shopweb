@@ -15,6 +15,7 @@ import { FlashList } from "@shopify/flash-list";
 import React, { useMemo, useState } from "react";
 import { StyleSheet, View, TouchableWithoutFeedback } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { localPluginPlatform } from "@/constants/commonConst";
 
 export default function Sheets() {
     const [index, setIndex] = useState(0);
