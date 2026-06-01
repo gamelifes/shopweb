@@ -15,6 +15,7 @@ import { musicIsPaused } from "@/utils/trackUtils";
 import EventEmitter from "eventemitter3";
 import { produce } from "immer";
 import { atom, getDefaultStore, useAtomValue } from "jotai";
+import Toast from "@/utils/toast";
 import shuffle from "lodash.shuffle";
 import ReactNativeTrackPlayer, {
     Event,
@@ -470,6 +471,7 @@ class TrackPlayer extends EventEmitter<{
                 this.play(musicItem, forcePlay);
             } else if (message === PlayFailReason.INVALID_SOURCE) {
                 trace("音源为空，播放失败");
+                Toast.warn("无法播放：音源无效");
                 await this.handlePlayFail();
             } else if (message === PlayFailReason.PLAY_LIST_IS_EMPTY) {
                 // 队列是空的，不应该出现这种情况
