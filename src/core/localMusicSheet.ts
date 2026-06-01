@@ -184,18 +184,19 @@ async function importLocal(_folderPaths: string[]) {
                 platform = "本地";
                 id = CryptoJs.MD5(musicPath).toString(CryptoJs.enc.Hex);
             }
-            return {
-                id,
-                platform,
-                title: title ?? meta?.title ?? getFileName(musicPath),
-                artist: artist ?? meta?.artist ?? "未知歌手",
-                duration: parseInt(meta?.duration ?? "0", 10) / 1000,
-                album: meta?.album ?? "未知专辑",
-                artwork: "",
-                [internalSerializeKey]: {
-                    localPath: musicPath,
-                },
-            } as IMusic.IMusicItem;
+        return {
+            id,
+            platform,
+            title: title ?? meta?.title ?? getFileName(musicPath),
+            artist: artist ?? meta?.artist ?? "未知歌手",
+            duration: parseInt(meta?.duration ?? "0", 10) / 1000,
+            album: meta?.album ?? "未知专辑",
+            artwork: "",
+            url: addFileScheme(musicPath),
+            [internalSerializeKey]: {
+                localPath: musicPath,
+            },
+        } as IMusic.IMusicItem;
         }),
     );
     if (token !== importToken) {
