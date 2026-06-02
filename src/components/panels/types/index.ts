@@ -1,4 +1,5 @@
 import AddToMusicSheet from "./addToMusicSheet";
+import AudioEffect from "./audioEffect";
 import AssociateLrc from "./associateLrc";
 import ColorPicker from "./colorPicker";
 import MusicQuality from "./musicQuality";
@@ -18,6 +19,8 @@ import EditMusicSheetInfo from "./editMusicSheetInfo";
 export default {
     /** 加入歌单 */
     AddToMusicSheet,
+    /** 音效面板 */
+    AudioEffect,
     /** 新建歌单 */
     CreateMusicSheet,
     /** 当前播放列表 */

@@ -17,6 +17,7 @@ import com.facebook.soloader.SoLoader
 import `fun`.upup.musicfree.lyricUtil.LyricUtilPackage
 import `fun`.upup.musicfree.mp3Util.Mp3UtilPackage
 import `fun`.upup.musicfree.utils.UtilsPackage
+import `fun`.upup.musicfree.audioEffect.AudioEffectPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -29,6 +30,7 @@ class MainApplication : Application(), ReactApplication {
               add(UtilsPackage())
               add(Mp3UtilPackage())
               add(LyricUtilPackage())
+              add(AudioEffectPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"

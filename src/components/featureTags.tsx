@@ -1,13 +1,15 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAtom } from "jotai";
-import { soundEffectAtom, qualityAtom, aiModeAtom } from "@/store/featureTagsAtom";
+import { qualityAtom, aiModeAtom } from "@/store/featureTagsAtom";
+import { soundEffectEnabledAtom } from "@/store/audioEffectAtom";
+import { showPanel } from "@/components/panels/usePanel";
 import rpx from "@/utils/rpx";
 import useColors from "@/hooks/useColors";
 
 export default function FeatureTags() {
     const colors = useColors();
-    const [soundEffect, setSoundEffect] = useAtom(soundEffectAtom);
+    const [soundEffect] = useAtom(soundEffectEnabledAtom);
     const [quality, setQuality] = useAtom(qualityAtom);
     const [aiMode, setAiMode] = useAtom(aiModeAtom);
 
@@ -15,7 +17,7 @@ export default function FeatureTags() {
         {
             label: "音效",
             active: !!soundEffect,
-            onPress: () => setSoundEffect(!soundEffect),
+            onPress: () => showPanel("AudioEffect"),
         },
         {
             label: "品质",
