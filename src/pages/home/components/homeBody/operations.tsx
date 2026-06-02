@@ -32,7 +32,7 @@ export default function Operations() {
                 <ActionButton
                     style={[
                         styles.actionButtonStyle,
-                        index % 4 ? styles.actionMarginLeft : null,
+                        index > 0 ? styles.actionMarginLeft : null,
                     ]}
                     key={action.title}
                     {...action}
@@ -46,16 +46,17 @@ const styles = StyleSheet.create({
     container: {
         width: rpx(750),
         paddingHorizontal: rpx(24),
-        marginVertical: rpx(32),
+        marginTop: rpx(12),
+        marginBottom: rpx(24),
         flexDirection: "row",
         flexWrap: "nowrap",
     },
     actionButtonStyle: {
-        width: rpx(157.5),
-        height: rpx(160),
-        borderRadius: rpx(18),
+        flex: 1,
+        height: rpx(144),
+        borderRadius: rpx(14),
     },
     actionMarginLeft: {
-        marginLeft: rpx(24),
+        marginLeft: rpx(16),
     },
 });

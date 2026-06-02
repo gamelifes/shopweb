@@ -3,7 +3,6 @@ import { StyleSheet, View } from "react-native";
 import rpx from "@/utils/rpx";
 import SeekBar from "./seekBar";
 import PlayControl from "./playControl";
-import Operations from "@/pages/musicDetail/components/content/albumCover/operations";
 import useOrientation from "@/hooks/useOrientation";
 
 export default function Bottom() {
@@ -14,13 +13,10 @@ export default function Bottom() {
                 styles.wrapper,
                 orientation === "horizontal"
                     ? {
-                        height: rpx(240),
-                      }
+                        height: rpx(180),
+                    }
                     : undefined,
             ]}>
-            <View style={styles.row}>
-                <Operations />
-            </View>
             <View style={styles.row}>
                 <SeekBar />
             </View>
@@ -34,10 +30,10 @@ export default function Bottom() {
 const styles = StyleSheet.create({
     wrapper: {
         width: "100%",
-        height: rpx(240),
+        height: rpx(180),
     },
     row: {
-        height: rpx(80),
+        height: rpx(90),
         alignItems: "center",
         justifyContent: "center",
     },

@@ -5,6 +5,7 @@ import PageBackground from "@/components/base/pageBackground";
 import ThemeText from "@/components/base/themeText";
 import { showDialog } from "@/components/dialogs/useDialog";
 import { showPanel } from "@/components/panels/usePanel";
+import useColors from "@/hooks/useColors";
 import { useI18N } from "@/core/i18n";
 import { ROUTE_PATH, useNavigate } from "@/core/router";
 import TrackPlayer from "@/core/trackPlayer";
@@ -15,7 +16,7 @@ import timeformat from "@/utils/timeformat";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import React, { memo } from "react";
 import { BackHandler, Platform, StyleSheet, View } from "react-native";
-import { default as DeviceInfo, default as deviceInfoModule } from "react-native-device-info";
+import { default as DeviceInfo } from "react-native-device-info";
 
 const ITEM_HEIGHT = rpx(108);
 
@@ -26,6 +27,7 @@ interface ISettingOptions {
 }
 
 function HomeDrawer(props: any) {
+    const colors = useColors();
     const navigate = useNavigate();
     function navigateToSetting(settingType: string) {
         navigate(ROUTE_PATH.SETTING, {
@@ -89,7 +91,7 @@ function HomeDrawer(props: any) {
                     </ThemeText>
                     {/* <IconButton icon={'qrcode-scan'} size={rpx(36)} /> */}
                 </View>
-                <View style={style.card}>
+                <View style={[style.card, { backgroundColor: colors.card, borderRadius: rpx(14), overflow: "hidden" }]}>
                     <ListItem withHorizontalPadding heightType="smallest">
                         <ListItem.ListItemText
                             fontSize="subTitle"
@@ -110,7 +112,7 @@ function HomeDrawer(props: any) {
                         </ListItem>
                     ))}
                 </View>
-                <View style={style.card}>
+                <View style={[style.card, { backgroundColor: colors.card, borderRadius: rpx(14), overflow: "hidden" }]}>
                     <ListItem withHorizontalPadding heightType="smallest">
                         <ListItem.ListItemText
                             fontSize="subTitle"
@@ -151,7 +153,7 @@ function HomeDrawer(props: any) {
                     </ListItem>
                 </View>
 
-                <View style={style.card}>
+                <View style={[style.card, { backgroundColor: colors.card, borderRadius: rpx(14), overflow: "hidden" }]}>
                     <ListItem withHorizontalPadding heightType="smallest">
                         <ListItem.ListItemText
                             fontSize="subTitle"

@@ -74,7 +74,9 @@ export default function AppBar(props: IAppBarProps) {
     const colors = useColors();
     const navigation = useNavigation();
 
-    const bgColor = color(colors.appBar ?? colors.primary).toString();
+    const bgColor = color(colors.appBar ?? colors.primary)
+        .alpha(0.85)
+        .toString();
     const contentColor = _color ?? colors.appBarText;
 
     const [showMenu, setShowMenu] = useState(false);
@@ -103,7 +105,13 @@ export default function AppBar(props: IAppBarProps) {
                 style={[
                     styles.container,
                     containerStyle,
-                    { backgroundColor: bgColor },
+                    {
+                        backgroundColor: bgColor,
+                        borderBottomWidth: StyleSheet.hairlineWidth,
+                        borderBottomColor: color(colors.appBar ?? colors.primary)
+                            .alpha(0.12)
+                            .toString(),
+                    },
                 ]}>
                 <IconButton
                     name="arrow-left"
@@ -239,7 +247,7 @@ const styles = StyleSheet.create({
     container: {
         width: "100%",
         zIndex: 10000,
-        height: rpx(88),
+        height: rpx(76),
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: rpx(24),

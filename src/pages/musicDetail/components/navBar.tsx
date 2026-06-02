@@ -72,7 +72,7 @@ export default function NavBar() {
     });
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.container, { backgroundColor: "rgba(0,0,0,0.15)" }]}>
             <IconButton
                 name="arrow-left"
                 sizeType={"normal"}

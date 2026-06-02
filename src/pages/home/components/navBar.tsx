@@ -26,9 +26,19 @@ export default function NavBar() {
             />
             <ThemeText
                 fontSize="title"
+                fontWeight="bold"
                 style={[styles.title]}>
                 MusicFree
             </ThemeText>
+            <IconButton
+                accessibilityLabel="搜索"
+                name="magnifying-glass"
+                style={styles.search}
+                color={colors.text}
+                onPress={() => {
+                    navigation?.navigate("search");
+                }}
+            />
         </View>
     );
 }
@@ -44,8 +54,13 @@ const styles = StyleSheet.create({
     },
     title: {
         marginLeft: rpx(24),
+        flex: 1,
+        fontWeight: "bold",
     },
     menu: {
         marginLeft: rpx(24),
+    },
+    search: {
+        marginRight: rpx(24),
     },
 });

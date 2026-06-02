@@ -1,12 +1,9 @@
 import React from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import rpx from "@/utils/rpx";
 
-import { ImgAsset } from "@/constants/assetsConst";
 import { useCurrentMusic } from "@/core/trackPlayer";
-import TrackPlayer, { useCurrentMusic as useCurrentMusicTrackPlayer } from "@/core/trackPlayer";
 import useOrientation from "@/hooks/useOrientation";
-import { showPanel } from "@/components/panels/usePanel";
 import Icon from "@/components/base/icon";
 
 export default function Operations() {

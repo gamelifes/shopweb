@@ -1,12 +1,11 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useEffect } from "react";
 import rpx from "@/utils/rpx";
 import { ImgAsset } from "@/constants/assetsConst";
 import FastImage from "@/components/base/fastImage";
 import useOrientation from "@/hooks/useOrientation";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useCurrentMusic } from "@/core/trackPlayer";
-import useColors from "@/hooks/useColors";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 // Reanimated imports
 import Animated, {
     useSharedValue,
@@ -18,7 +17,7 @@ import Animated, {
 // Svg imports
 import { Svg, Circle } from "react-native-svg";
 import Operations from "./operations";
-import { showPanel } from "@/components/panels/usePanel.ts";
+import { showPanel } from "@/components/panels/usePanel";
 
 interface IProps {
     onTurnPageClick?: () => void;
@@ -29,7 +28,6 @@ export default function AlbumCover(props: IProps) {
 
     const musicItem = useCurrentMusic();
     const orientation = useOrientation();
-    const colors = useColors();
 
     const size = orientation === "vertical" ? rpx(500) : rpx(260);
 
@@ -50,9 +48,6 @@ export default function AlbumCover(props: IProps) {
             transform: [{ rotate: `${rotation.value}deg` }],
         };
     });
-
-    // Lyric text placeholder - in a real implementation, this would come from lyricManager
-    const lyricText = "歌词";
 
     const longPress = Gesture.LongPress()
         .onStart(() => {
@@ -75,15 +70,14 @@ export default function AlbumCover(props: IProps) {
     return (
         <>
             <GestureDetector gesture={combineGesture}>
-                {/* Container with card-like appearance */}
                 <View style={styles.container}>
-                    {/* Animated cover image */}
+                    {/* Animated cover image with vinyl rotation */}
                     <Animated.View style={[styles.artwork, rotationStyle]}>
-<FastImage
-    style={StyleSheet.absoluteFill}
-    source={musicItem?.artwork}
-    placeholderSource={ImgAsset.albumDefault}
-/>
+                        <FastImage
+                            style={StyleSheet.absoluteFill}
+                            source={musicItem?.artwork}
+                            placeholderSource={ImgAsset.albumDefault}
+                        />
                     </Animated.View>
                     {/* Outer ring for vinyl texture */}
                     <Svg style={styles.svgContainer}>
@@ -91,15 +85,11 @@ export default function AlbumCover(props: IProps) {
                             cx={size / 2}
                             cy={size / 2}
                             r={size / 2 - 2}
-                            stroke={colors.border}
+                            stroke={"rgba(255,255,255,0.2)"}
                             strokeWidth={2}
                             fill="transparent"
                         />
                     </Svg>
-                    {/* Lyrics mask overlay */}
-                    <View style={styles.lyricsMask}>
-                        <Text style={styles.lyricsText}>{lyricText}</Text>
-                    </View>
                 </View>
             </GestureDetector>
             <Operations />
@@ -109,34 +99,14 @@ export default function AlbumCover(props: IProps) {
 
 const styles = StyleSheet.create({
     container: {
-        // Size will be set by parent based on orientation
         backgroundColor: "transparent",
         borderRadius: rpx(20),
         overflow: "hidden",
-        // Shadow for iOS
-        shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        // Shadow for Android
-        elevation: 2,
     },
     artwork: {
-        // This will be filled by the parent's size via style prop
         ...StyleSheet.absoluteFillObject,
     },
     svgContainer: {
         ...StyleSheet.absoluteFillObject,
-    },
-    lyricsMask: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: "rgba(0,0,0,0.35)", // Semi-transparent dark overlay
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    lyricsText: {
-        color: "#FFFFFF",
-        fontSize: rpx(14),
-        textAlign: "center",
     },
 });
