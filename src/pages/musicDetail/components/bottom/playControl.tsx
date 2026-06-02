@@ -9,12 +9,14 @@ import TrackPlayer, { useMusicState, useRepeatMode } from "@/core/trackPlayer";
 import useOrientation from "@/hooks/useOrientation";
 import delay from "@/utils/delay";
 import { musicIsPaused } from "@/utils/trackUtils";
+import useColors from "@/hooks/useColors";
 
 export default function () {
     const repeatMode = useRepeatMode();
     const musicState = useMusicState();
 
     const orientation = useOrientation();
+    const colors = useColors();
 
     console.log(repeatMode, repeatModeConst[repeatMode]);
 
@@ -30,9 +32,9 @@ export default function () {
                         : null,
                 ]}>
                 <Icon
-                    color={"white"}
+                    color={colors.textSecondary}
                     name={repeatModeConst[repeatMode].icon}
-                    size={rpx(56)}
+                    size={rpx(48)}
                     onPress={async () => {
                         InteractionManager.runAfterInteractions(async () => {
                             await delay(20, false);
@@ -41,17 +43,17 @@ export default function () {
                     }}
                 />
                 <Icon
-                    color={"white"}
+                    color={colors.textSecondary}
                     name={"skip-left"}
-                    size={rpx(56)}
+                    size={rpx(48)}
                     onPress={() => {
                         TrackPlayer.skipToPrevious();
                     }}
                 />
                 <Icon
-                    color={"white"}
+                    color={colors.textSecondary}
                     name={musicIsPaused(musicState) ? "play" : "pause"}
-                    size={rpx(96)}
+                    size={rpx(56)}
                     onPress={() => {
                         if (musicIsPaused(musicState)) {
                             TrackPlayer.play();
@@ -61,17 +63,17 @@ export default function () {
                     }}
                 />
                 <Icon
-                    color={"white"}
+                    color={colors.textSecondary}
                     name={"skip-right"}
-                    size={rpx(56)}
+                    size={rpx(48)}
                     onPress={() => {
                         TrackPlayer.skipToNext();
                     }}
                 />
                 <Icon
-                    color={"white"}
+                    color={colors.textSecondary}
                     name={"playlist"}
-                    size={rpx(56)}
+                    size={rpx(48)}
                     onPress={() => {
                         showPanel("PlayList");
                     }}
@@ -84,8 +86,8 @@ export default function () {
 const style = StyleSheet.create({
     wrapper: {
         width: "100%",
-        marginTop: rpx(36),
-        height: rpx(100),
+        // Remove marginTop to fit within the row height
+        height: "100%", // Fill the row height
         flexDirection: "row",
         justifyContent: "space-around",
         alignItems: "center",

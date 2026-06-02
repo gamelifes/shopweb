@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from "react-native";
+import { StyleProp, StyleSheet, TextStyle, View, ViewStyle, TouchableOpacity } from "react-native";
 import rpx from "@/utils/rpx";
 import ThemeText from "./themeText";
 import useColors from "@/hooks/useColors";
@@ -8,20 +8,28 @@ interface ITagProps {
     tagName: string;
     containerStyle?: StyleProp<ViewStyle>;
     style?: StyleProp<TextStyle>;
+    onPress?: () => void;
+    active?: boolean;
 }
 export default function Tag(props: ITagProps) {
     const colors = useColors();
+    const handlePress = props.onPress;
     return (
-        <View
+        <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handlePress}
             style={[
                 styles.tag,
-                { backgroundColor: colors.card, borderColor: colors.divider },
+                { 
+                    backgroundColor: props.active ? `${colors.primary}15` : colors.card,
+                    borderColor: props.active ? colors.primary : colors.divider,
+                },
                 props.containerStyle,
             ]}>
             <ThemeText style={[styles.tagText, props.style]} fontSize="tag">
                 {props.tagName}
             </ThemeText>
-        </View>
+        </TouchableOpacity>
     );
 }
 

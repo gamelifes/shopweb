@@ -3,19 +3,14 @@ import { Image, Pressable, StyleSheet, View } from "react-native";
 import rpx from "@/utils/rpx";
 
 import { ImgAsset } from "@/constants/assetsConst";
-import Toast from "@/utils/toast";
+import { useCurrentMusic } from "@/core/trackPlayer";
+import TrackPlayer, { useCurrentMusic as useCurrentMusicTrackPlayer } from "@/core/trackPlayer";
 import useOrientation from "@/hooks/useOrientation";
 import { showPanel } from "@/components/panels/usePanel";
-import TrackPlayer, { useCurrentMusic, useMusicQuality } from "@/core/trackPlayer";
-import PersistStatus from "@/utils/persistStatus";
-import HeartIcon from "../heartIcon";
-import i18n from "@/core/i18n";
+import Icon from "@/components/base/icon";
 
 export default function Operations() {
     const musicItem = useCurrentMusic();
-    const currentQuality = useMusicQuality();
-
-    const rate = PersistStatus.useValue("music.rate", 100);
     const orientation = useOrientation();
 
     return (
@@ -24,46 +19,22 @@ export default function Operations() {
                 styles.wrapper,
                 orientation === "horizontal" ? styles.horizontalWrapper : null,
             ]}>
-            <HeartIcon />
-            <Pressable
+            <Icon
+                name="heart"
+                size={rpx(24)}
+                color={(musicItem?.isFavorite ?? false) ? "#FF6B6B" : "#FFFFFF"}
                 onPress={() => {
-                    if (!musicItem) {
-                        return;
-                    }
-                    showPanel("MusicQuality", {
-                        musicItem,
-                        async onQualityPress(quality) {
-                            const changeResult =
-                                await TrackPlayer.changeQuality(quality);
-                            if (!changeResult) {
-                                Toast.warn(i18n.t("toast.currentQualityNotAvailableForCurrentMusic"));
-                            }
-                        },
-                    });
-                }}>
-                <Image
-                    source={ImgAsset.quality[currentQuality]}
-                    style={styles.quality}
-                />
-            </Pressable>
-            <Pressable
+                    // TODO: Implement favorite toggle
+                }}
+            />
+            <Icon
+                name="share"
+                size={rpx(24)}
+                color="#FFFFFF"
                 onPress={() => {
-                    if (!musicItem) {
-                        return;
-                    }
-                    showPanel("PlayRate", {
-                        async onRatePress(newRate) {
-                            if (rate !== newRate) {
-                                try {
-                                    await TrackPlayer.setRate(newRate / 100);
-                                    PersistStatus.set("music.rate", newRate);
-                                } catch { }
-                            }
-                        },
-                    });
-                }}>
-                <Image source={ImgAsset.rate[rate!]} style={styles.quality} />
-            </Pressable>
+                    // TODO: Implement share
+                }}
+            />
         </View>
     );
 }
@@ -79,9 +50,5 @@ const styles = StyleSheet.create({
     },
     horizontalWrapper: {
         marginBottom: 0,
-    },
-    quality: {
-        width: rpx(52),
-        height: rpx(52),
     },
 });

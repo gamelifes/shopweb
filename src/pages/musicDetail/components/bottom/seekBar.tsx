@@ -5,30 +5,24 @@ import Slider from "@react-native-community/slider";
 import timeformat from "@/utils/timeformat";
 import { fontSizeConst } from "@/constants/uiConst";
 import TrackPlayer, { useProgress } from "@/core/trackPlayer";
-
-interface ITimeLabelProps {
-    time: number;
-}
-
-function TimeLabel(props: ITimeLabelProps) {
-    return (
-        <Text style={style.text}>{timeformat(Math.max(props.time, 0))}</Text>
-    );
-}
+import useColors from "@/hooks/useColors";
 
 export default function SeekBar() {
     const progress = useProgress(1000);
     const [tmpProgress, setTmpProgress] = useState<number | null>(null);
     const slidingRef = useRef(false);
+    const colors = useColors();
 
     return (
         <View style={style.wrapper}>
-            <TimeLabel time={tmpProgress ?? progress.position} />
+            <Text style={[style.text, { color: colors.textSecondary }]}>
+                {timeformat(Math.max(tmpProgress ?? progress.position, 0))}
+            </Text>
             <Slider
                 style={style.slider}
-                minimumTrackTintColor={"#cccccc"}
-                maximumTrackTintColor={"#999999"}
-                thumbTintColor={"#dddddd"}
+                minimumTrackTintColor={colors.border}
+                maximumTrackTintColor={colors.border}
+                thumbTintColor={colors.primary}
                 minimumValue={0}
                 maximumValue={progress.duration}
                 onSlidingStart={() => {
@@ -49,7 +43,9 @@ export default function SeekBar() {
                 }}
                 value={progress.position}
             />
-            <TimeLabel time={progress.duration} />
+            <Text style={[style.text, { color: colors.textSecondary }]}>
+                {timeformat(progress.duration)}
+            </Text>
         </View>
     );
 }
@@ -57,18 +53,18 @@ export default function SeekBar() {
 const style = StyleSheet.create({
     wrapper: {
         width: "100%",
-        height: rpx(40),
+        height: rpx(24),
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "row",
+        paddingHorizontal: rpx(24),
     },
     slider: {
-        width: "73%",
-        height: rpx(40),
+        width: "80%",
+        height: rpx(4),
     },
     text: {
-        fontSize: fontSizeConst.description,
+        fontSize: fontSizeConst.caption,
         includeFontPadding: false,
-        color: "#cccccc",
     },
 });

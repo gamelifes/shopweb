@@ -14,6 +14,8 @@ const fontSizeConst = {
     title: rpx(32),
     /** appbar的字体 */
     appbar: rpx(36),
+    /** 小字体如时间 */
+    caption: rpx(18),
 };
 
 const fontWeightConst = {
