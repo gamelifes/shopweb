@@ -1,45 +1,59 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAtom } from "jotai";
 import { soundEffectAtom, qualityAtom, aiModeAtom } from "@/store/featureTagsAtom";
-import Tag from "@/components/base/tag";
+import rpx from "@/utils/rpx";
+import useColors from "@/hooks/useColors";
 
 export default function FeatureTags() {
+    const colors = useColors();
     const [soundEffect, setSoundEffect] = useAtom(soundEffectAtom);
     const [quality, setQuality] = useAtom(qualityAtom);
     const [aiMode, setAiMode] = useAtom(aiModeAtom);
 
+    const tags = [
+        {
+            label: "音效",
+            active: !!soundEffect,
+            onPress: () => setSoundEffect(!soundEffect),
+        },
+        {
+            label: "品质",
+            active: quality === "高质量",
+            onPress: () => setQuality(quality === "标准" ? "高质量" : "标准"),
+        },
+        {
+            label: "AI模式",
+            active: !!aiMode,
+            onPress: () => setAiMode(!aiMode),
+        },
+    ] as const;
+
     return (
         <View style={styles.container}>
-            <Tag
-                tagName={soundEffect ? "音效 on" : "音效 off"}
-                containerStyle={[
-                    styles.tag,
-                    soundEffect ? styles.activeTag : styles.inactiveTag,
-                ]}
-                style={styles.tagText}
-                onPress={() => setSoundEffect(!soundEffect)}
-            />
-            <Tag
-                tagName={quality === "标准" ? "高质量" : "标准"}
-                containerStyle={[
-                    styles.tag,
-                    quality === "高质量" ? styles.activeTag : styles.inactiveTag,
-                ]}
-                style={styles.tagText}
-                onPress={() =>
-                    setQuality(quality === "标准" ? "高质量" : "标准")
-                }
-            />
-            <Tag
-                tagName={aiMode ? "AI模式 on" : "AI模式 off"}
-                containerStyle={[
-                    styles.tag,
-                    aiMode ? styles.activeTag : styles.inactiveTag,
-                ]}
-                style={styles.tagText}
-                onPress={() => setAiMode(!aiMode)}
-            />
+            {tags.map((tag) => (
+                <TouchableOpacity
+                    key={tag.label}
+                    activeOpacity={0.7}
+                    onPress={tag.onPress}
+                    style={[
+                        styles.tag,
+                        tag.active
+                            ? { backgroundColor: "rgba(255,255,255,0.12)", borderColor: "rgba(255,255,255,0.25)" }
+                            : { backgroundColor: "transparent", borderColor: "rgba(255,255,255,0.15)" },
+                    ]}>
+                    <Text
+                        style={[
+                            styles.tagText,
+                            { color: tag.active ? colors.text : "rgba(255,255,255,0.6)" },
+                        ]}>
+                        {tag.label}
+                    </Text>
+                    <Text style={[styles.arrow, { color: tag.active ? colors.text : "rgba(255,255,255,0.4)" }]}>
+                        ▸
+                    </Text>
+                </TouchableOpacity>
+            ))}
         </View>
     );
 }
@@ -48,25 +62,25 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: "row",
         justifyContent: "center",
-        gap: 12,
+        gap: rpx(8),
+        paddingVertical: rpx(8),
+        paddingHorizontal: rpx(20),
+        flexShrink: 0,
     },
     tag: {
-        borderRadius: 6,
-        borderWidth: StyleSheet.hairlineWidth,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-    },
-    activeTag: {
-        backgroundColor: "#EFF6FF", // light blue tint
-        borderColor: "#006EFF",
-    },
-    inactiveTag: {
-        backgroundColor: "transparent",
-        borderColor: "#D1D5DB",
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: rpx(14),
+        paddingVertical: rpx(5),
+        borderRadius: rpx(9999),
+        borderWidth: 1,
     },
     tagText: {
-        fontSize: 12,
+        fontSize: rpx(22),
         fontWeight: "500",
-        color: "#6B7280",
+    },
+    arrow: {
+        fontSize: rpx(18),
+        marginLeft: rpx(4),
     },
 });

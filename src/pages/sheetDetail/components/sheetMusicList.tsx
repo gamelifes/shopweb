@@ -22,7 +22,6 @@ export default function SheetMusicList() {
                 showIndex
                 state={RequestStateCode.IDLE}
                 highlightMusicItem={currentMusic}
-
             />
         </HorizontalSafeAreaView>
     );

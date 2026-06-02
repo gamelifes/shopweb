@@ -8,7 +8,7 @@ import { useParams } from "@/core/router";
 import useColors from "@/hooks/useColors";
 import rpx from "@/utils/rpx";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 
 export default function Header() {
     const { id = "favorite" } = useParams<"local-sheet-detail">();
@@ -16,49 +16,98 @@ export default function Header() {
     const colors = useColors();
     const { t } = useI18N();
 
+    const coverUri = sheet?.coverImg ?? sheet?.artwork;
+
     return (
-        <View style={{ backgroundColor: colors.card }}>
-            <View style={style.content}>
-                <FastImage
-                    style={style.coverImg}
-                    source={sheet?.coverImg}
-                    placeholderSource={ImgAsset.albumDefault}
+        <>
+            <View style={styles.hero}>
+                {/* Blurred background */}
+                {coverUri ? (
+                    <Image
+                        source={{ uri: coverUri }}
+                        style={styles.blurredBg}
+                        blurRadius={32}
+                    />
+                ) : null}
+                {/* Gradient overlay */}
+                <View
+                    style={[
+                        styles.gradient,
+                        {
+                            backgroundColor: colors.background,
+                        },
+                    ]}
                 />
-                <View style={style.details}>
-                    <ThemeText fontSize="title" numberOfLines={3}>
-                        {sheet?.title}
-                    </ThemeText>
-                    <ThemeText fontColor="textSecondary" fontSize="subTitle">
-                        {t("sheetDetail.totalMusicCount", {
-                            count: sheet?.musicList?.length ?? 0,
-                        })}
-                    </ThemeText>
+                {/* Content */}
+                <View style={styles.content}>
+                    <FastImage
+                        style={styles.coverImg}
+                        source={coverUri}
+                        placeholderSource={ImgAsset.albumDefault}
+                    />
+                    <View style={styles.meta}>
+                        <ThemeText
+                            fontSize="title"
+                            fontWeight="bold"
+                            numberOfLines={2}>
+                            {sheet?.title}
+                        </ThemeText>
+                        <ThemeText fontColor="textSecondary" fontSize="subTitle">
+                            {t("sheetDetail.totalMusicCount", {
+                                count: sheet?.musicList?.length ?? 0,
+                            })}
+                        </ThemeText>
+                    </View>
                 </View>
             </View>
             <PlayAllBar musicList={sheet?.musicList} musicSheet={sheet} />
-        </View>
+        </>
     );
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
+    hero: {
+        height: rpx(260),
+        position: "relative",
+        overflow: "hidden",
+    },
+    blurredBg: {
+        position: "absolute",
+        top: "-20%",
+        left: "-20%",
+        right: "-20%",
+        bottom: "-20%",
+        width: "140%",
+        height: "140%",
+        opacity: 0.45,
+    },
+    gradient: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.55,
+    },
     content: {
-        width: "100%",
-        height: rpx(300),
-        paddingHorizontal: rpx(24),
+        position: "relative",
+        zIndex: 2,
+        flex: 1,
         flexDirection: "row",
-        justifyContent: "flex-start",
-        alignItems: "center",
+        alignItems: "flex-end",
+        gap: rpx(16),
+        paddingHorizontal: rpx(24),
+        paddingBottom: rpx(20),
     },
     coverImg: {
-        width: rpx(210),
-        height: rpx(210),
-        borderRadius: rpx(24),
+        width: rpx(120),
+        height: rpx(120),
+        borderRadius: rpx(14),
+        flexShrink: 0,
     },
-    details: {
-        paddingHorizontal: rpx(36),
+    meta: {
         flex: 1,
-        height: rpx(140),
-        justifyContent: "space-between",
-        gap: rpx(14),
+        paddingBottom: rpx(4),
+        gap: rpx(6),
     },
 });

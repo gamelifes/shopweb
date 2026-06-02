@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Background from "./components/background";
 import Bottom from "./components/bottom";
 import Content from "./components/content";
+import FeatureTags from "@/components/featureTags";
 import Lyric from "./components/content/lyric";
 import NavBar from "./components/navBar";
 import Config from "@/core/appConfig";
@@ -35,6 +36,7 @@ export default function MusicDetail() {
                 <View style={style.bodyWrapper}>
                     <View style={globalStyle.flex1}>
                         <NavBar />
+                        <FeatureTags />
                         <Content />
                         <Bottom />
                     </View>
