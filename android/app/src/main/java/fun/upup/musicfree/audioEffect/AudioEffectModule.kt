@@ -18,6 +18,8 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
     private var loudnessEnhancer: LoudnessEnhancer? = null
     private var currentSessionId: Int = 0
     private var initialized: Boolean = false
+    private var bassBoostStrength: Short = 0
+    private var virtualizerStrength: Short = 0
 
     override fun getName() = "AudioEffectModule"
 
@@ -163,17 +165,14 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
     @ReactMethod
     fun setBassBoost(strength: Int) {
         try {
-            bassBoost?.setStrength(strength.toShort())
+            bassBoostStrength = strength.toShort()
+            bassBoost?.setStrength(bassBoostStrength)
         } catch (_: Exception) { }
     }
 
     @ReactMethod
     fun getBassBoostStrength(promise: Promise) {
-        try {
-            promise.resolve((bassBoost?.getStrength() ?: 0).toInt())
-        } catch (e: Exception) {
-            promise.reject("BASS_ERROR", e.message)
-        }
+        promise.resolve(bassBoostStrength.toInt())
     }
 
     @ReactMethod
@@ -186,17 +185,14 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
     @ReactMethod
     fun setVirtualizer(strength: Int) {
         try {
-            virtualizer?.setStrength(strength.toShort())
+            virtualizerStrength = strength.toShort()
+            virtualizer?.setStrength(virtualizerStrength)
         } catch (_: Exception) { }
     }
 
     @ReactMethod
     fun getVirtualizerStrength(promise: Promise) {
-        try {
-            promise.resolve((virtualizer?.getStrength() ?: 0).toInt())
-        } catch (e: Exception) {
-            promise.reject("VIRT_ERROR", e.message)
-        }
+        promise.resolve(virtualizerStrength.toInt())
     }
 
     @ReactMethod
