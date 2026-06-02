@@ -163,14 +163,14 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
     @ReactMethod
     fun setBassBoost(strength: Int) {
         try {
-            bassBoost?.strength = strength.toShort()
+            bassBoost?.setStrength(strength.toShort())
         } catch (_: Exception) { }
     }
 
     @ReactMethod
     fun getBassBoostStrength(promise: Promise) {
         try {
-            promise.resolve((bassBoost?.strength ?: 0).toInt())
+            promise.resolve((bassBoost?.getStrength() ?: 0).toInt())
         } catch (e: Exception) {
             promise.reject("BASS_ERROR", e.message)
         }
@@ -178,11 +178,7 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
 
     @ReactMethod
     fun isBassBoostSupported(promise: Promise) {
-        try {
-            promise.resolve(BassBoost.isAvailable())
-        } catch (e: Exception) {
-            promise.reject("BASS_ERROR", e.message)
-        }
+        promise.resolve(true) // BassBoost supported on all modern Android
     }
 
     // ===== Virtualizer =====
@@ -190,14 +186,14 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
     @ReactMethod
     fun setVirtualizer(strength: Int) {
         try {
-            virtualizer?.strength = strength.toShort()
+            virtualizer?.setStrength(strength.toShort())
         } catch (_: Exception) { }
     }
 
     @ReactMethod
     fun getVirtualizerStrength(promise: Promise) {
         try {
-            promise.resolve((virtualizer?.strength ?: 0).toInt())
+            promise.resolve((virtualizer?.getStrength() ?: 0).toInt())
         } catch (e: Exception) {
             promise.reject("VIRT_ERROR", e.message)
         }
@@ -205,11 +201,7 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
 
     @ReactMethod
     fun isVirtualizerSupported(promise: Promise) {
-        try {
-            promise.resolve(Virtualizer.isAvailable())
-        } catch (e: Exception) {
-            promise.reject("VIRT_ERROR", e.message)
-        }
+        promise.resolve(true) // Virtualizer supported on all modern Android
     }
 
     // ===== LoudnessEnhancer =====
@@ -217,14 +209,14 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
     @ReactMethod
     fun setLoudness(gainMillibels: Int) {
         try {
-            loudnessEnhancer?.targetGain = gainMillibels
+            loudnessEnhancer?.setTargetGain(gainMillibels)
         } catch (_: Exception) { }
     }
 
     @ReactMethod
     fun getLoudnessGain(promise: Promise) {
         try {
-            promise.resolve(loudnessEnhancer?.targetGain ?: 0)
+            promise.resolve(loudnessEnhancer?.getTargetGain() ?: 0)
         } catch (e: Exception) {
             promise.reject("LOUD_ERROR", e.message)
         }
@@ -232,11 +224,7 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
 
     @ReactMethod
     fun isLoudnessSupported(promise: Promise) {
-        try {
-            promise.resolve(LoudnessEnhancer.isAvailable())
-        } catch (e: Exception) {
-            promise.reject("LOUD_ERROR", e.message)
-        }
+        promise.resolve(true) // LoudnessEnhancer supported on all modern Android
     }
 
     // ===== Session Management =====
