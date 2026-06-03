@@ -69,7 +69,7 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
 
     return (
         <View style={bandStyles.container}>
-            <ThemeText fontSize="tag" style={bandStyles.freqLabel}>{freq}</ThemeText>
+            <ThemeText fontSize="tag" style={[bandStyles.freqLabel, { color: colors.textSecondary }]}>{freq}</ThemeText>
             <View
                 ref={trackRef}
                 style={[bandStyles.sliderArea]}
@@ -80,14 +80,14 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
                     style={[bandStyles.track, { backgroundColor: colors.divider }]}
                     {...panResponder.panHandlers}>
                     {/* Center line */}
-                    <View style={[bandStyles.midLine, { backgroundColor: colors.textSecondary }]} />
+                    <View style={[bandStyles.midLine, { backgroundColor: colors.textSecondary + "80" }]} />
                     {/* Fill: from center to thumb */}
                     {value !== 0 && (
                         <View
                             style={[
                                 bandStyles.fill,
                                 {
-                                    backgroundColor: value > 0 ? colors.primary : "#6b9eff",
+                                    backgroundColor: value > 0 ? colors.primary : colors.textSecondary,
                                     // fill goes from center to wherever the thumb is
                                     top: `${Math.min(pct, 0.5) * 100}%`,
                                     bottom: `${(1 - Math.max(pct, 0.5)) * 100}%`,
@@ -102,6 +102,7 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
                             {
                                 backgroundColor: colors.text,
                                 top: `${pct * 100}%`,
+                                shadowColor: colors.text + "80",
                             },
                         ]}
                     />
@@ -109,10 +110,7 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
             </View>
             <ThemeText
                 fontSize="tag"
-                style={[
-                    bandStyles.dbLabel,
-                    { color: value > 0 ? colors.primary : "#6b9eff" },
-                ]}>
+                fontColor={value > 0 ? "primary" : "textSecondary"}>
                 {dbStr}dB
             </ThemeText>
         </View>
@@ -128,7 +126,6 @@ const bandStyles = StyleSheet.create({
         marginBottom: rpx(8),
         fontSize: rpx(22),
         fontWeight: "500",
-        color: "rgba(255,255,255,0.6)",
     },
     sliderArea: {
         alignItems: "center",
@@ -163,7 +160,6 @@ const bandStyles = StyleSheet.create({
         marginTop: -rpx(11),
         marginLeft: rpx(13),
         elevation: 4,
-        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 4,
@@ -216,11 +212,11 @@ function EffectItem({ icon, name, desc, value, onChange }: IEffectItemProps) {
     return (
         <View style={effectStyles.container}>
             <View style={effectStyles.info}>
-                <View style={effectStyles.iconWrap}>
+                <View style={[effectStyles.iconWrap, { backgroundColor: colors.divider }]}>
                     <ThemeText fontSize="subTitle">{icon}</ThemeText>
                 </View>
                 <View>
-                    <ThemeText fontSize="content" fontWeight="medium" style={effectStyles.name}>{name}</ThemeText>
+                    <ThemeText fontSize="content" fontWeight="medium" style={[effectStyles.name, { color: colors.text }]}>{name}</ThemeText>
                     <ThemeText fontSize="tag" fontColor="textSecondary">{desc}</ThemeText>
                 </View>
             </View>
@@ -232,7 +228,16 @@ function EffectItem({ icon, name, desc, value, onChange }: IEffectItemProps) {
                 }}
                 {...panResponder.panHandlers}>
                 <View style={[effectStyles.fill, { backgroundColor: colors.primary, width: `${Math.round(pct * 100)}%` }]} />
-                <View style={[effectStyles.thumb, { backgroundColor: colors.text, left: `${Math.round(pct * 100)}%` }]} />
+                <View
+                    style={[
+                        effectStyles.thumb,
+                        {
+                            backgroundColor: colors.text,
+                            shadowColor: colors.text + "80",
+                            left: `${Math.round(pct * 100)}%`,
+                        },
+                    ]}
+                />
             </View>
         </View>
     );
@@ -255,13 +260,11 @@ const effectStyles = StyleSheet.create({
         width: rpx(32),
         height: rpx(32),
         borderRadius: rpx(8),
-        backgroundColor: "rgba(255,255,255,0.06)",
         alignItems: "center",
         justifyContent: "center",
     },
     name: {
         fontSize: rpx(24),
-        color: "rgba(255,255,255,0.9)",
     },
     slider: {
         width: rpx(100),
@@ -284,7 +287,6 @@ const effectStyles = StyleSheet.create({
         position: "absolute",
         marginLeft: -rpx(8),
         elevation: 3,
-        shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.3,
         shadowRadius: 3,
@@ -456,7 +458,7 @@ export default function AudioEffect() {
                     </View>
 
                     {/* Effects - design aligned */}
-                    <View style={[styles.section, { borderTopWidth: 1, borderTopColor: colors.divider, paddingTop: rpx(16) }]}>
+                    <View style={[styles.effectsSection]}>
                         <EffectItem
                             icon={"🔊"}
                             name={"Bass Boost"}
@@ -528,5 +530,10 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         paddingVertical: rpx(8),
+    },
+    effectsSection: {
+        borderTopWidth: 1,
+        borderTopColor: colors.divider,
+        paddingTop: rpx(16),
     },
 });
