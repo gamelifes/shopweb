@@ -15,7 +15,7 @@ export default function Operations() {
         <View style={styles.wrapper}>
             <Icon
                 name={isFav ? "heart" : "heart-outline"}
-                color={isFav ? colors.primary : colors.textSecondary}
+                color={isFav ? colors.primary : "rgba(255,255,255,0.7)"}
                 size={rpx(44)}
                 onPress={async () => {
                     if (!musicItem) return;
@@ -34,7 +34,7 @@ export default function Operations() {
             />
             <Icon
                 name="share"
-                color={colors.textSecondary}
+                color="rgba(255,255,255,0.7)"
                 size={rpx(44)}
                 onPress={() => {
                     // Share handled by navBar; could add custom behavior
@@ -46,10 +46,10 @@ export default function Operations() {
 
 const styles = StyleSheet.create({
     wrapper: {
-        width: "100%",
         flexDirection: "row",
-        justifyContent: "space-evenly",
+        justifyContent: "center",
         alignItems: "center",
-        paddingHorizontal: rpx(60),
+        gap: rpx(32),
+        marginBottom: rpx(12),
     },
 });

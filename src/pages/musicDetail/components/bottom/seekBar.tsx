@@ -3,28 +3,35 @@ import { StyleSheet, Text, View } from "react-native";
 import rpx from "@/utils/rpx";
 import Slider from "@react-native-community/slider";
 import timeformat from "@/utils/timeformat";
-import { fontSizeConst } from "@/constants/uiConst";
 import TrackPlayer, { useProgress } from "@/core/trackPlayer";
-import useColors from "@/hooks/useColors";
 
+/**
+ * SeekBar matching design spec:
+ *   [time] ———●—————————————————— [time]
+ *   - Track: 4px height, rgba(255,255,255,0.1)
+ *   - Fill: gradient white → rgba(255,255,255,0.7)
+ *   - Knob: 12px white circle with shadow
+ *   - Time: 11px, muted, tabular-nums
+ */
 export default function SeekBar() {
     const progress = useProgress(1000);
     const [tmpProgress, setTmpProgress] = useState<number | null>(null);
     const slidingRef = useRef(false);
-    const colors = useColors();
+
+    const currentPosition = tmpProgress ?? progress.position;
+    const positionText = timeformat(Math.max(currentPosition, 0));
+    const durationText = timeformat(progress.duration);
 
     return (
-        <View style={style.wrapper}>
-            <Text style={[style.text, { color: colors.textSecondary }]}>
-                {timeformat(Math.max(tmpProgress ?? progress.position, 0))}
-            </Text>
+        <View style={styles.wrapper}>
+            <Text style={styles.time}>{positionText}</Text>
             <Slider
-                style={style.slider}
-                minimumTrackTintColor={colors.border}
-                maximumTrackTintColor={colors.border}
-                thumbTintColor={colors.primary}
+                style={styles.slider}
+                minimumTrackTintColor="rgba(255,255,255,0.7)"
+                maximumTrackTintColor="rgba(255,255,255,0.1)"
+                thumbTintColor="white"
                 minimumValue={0}
-                maximumValue={progress.duration}
+                maximumValue={progress.duration || 1}
                 onSlidingStart={() => {
                     slidingRef.current = true;
                 }}
@@ -43,28 +50,27 @@ export default function SeekBar() {
                 }}
                 value={progress.position}
             />
-            <Text style={[style.text, { color: colors.textSecondary }]}>
-                {timeformat(progress.duration)}
-            </Text>
+            <Text style={styles.time}>{durationText}</Text>
         </View>
     );
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
     wrapper: {
-        width: "100%",
-        height: rpx(24),
-        justifyContent: "center",
-        alignItems: "center",
         flexDirection: "row",
-        paddingHorizontal: rpx(24),
+        alignItems: "center",
+        gap: rpx(12),
+        marginBottom: rpx(14),
     },
     slider: {
-        width: "80%",
+        flex: 1,
         height: rpx(4),
     },
-    text: {
-        fontSize: fontSizeConst.caption,
-        includeFontPadding: false,
+    time: {
+        fontSize: rpx(11),
+        color: "rgba(255,255,255,0.4)",
+        fontWeight: "500",
+        minWidth: rpx(36),
+        fontVariant: ["tabular-nums"],
     },
 });

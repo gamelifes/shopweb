@@ -2,23 +2,32 @@ import { useI18N } from "@/core/i18n";
 import { ROUTE_PATH, useNavigate } from "@/core/router";
 import rpx from "@/utils/rpx";
 import React from "react";
-import { StyleSheet, View } from "react-native";
-import ActionButton from "../ActionButton";
+import { StyleSheet, View, TouchableOpacity } from "react-native";
+import Icon from "@/components/base/icon";
+import ThemeText from "@/components/base/themeText";
 
+/**
+ * Operations cards section matching design's .operations-grid:
+ *   2-column grid with op-card (icon circle + label + arrow)
+ */
 export default function Operations() {
     const navigate = useNavigate();
     const { t } = useI18N();
 
     const actionButtons = [
         {
-            iconName: "clock-outline",
+            iconName: "clock-outline" as const,
+            iconBg: "rgba(63,163,181,0.15)",
+            iconColor: "#3FA3B5",
             title: t("home.playHistory"),
             action() {
                 navigate(ROUTE_PATH.HISTORY);
             },
         },
         {
-            iconName: "folder-music-outline",
+            iconName: "folder-music-outline" as const,
+            iconBg: "rgba(241,125,52,0.15)",
+            iconColor: "#f17d34",
             title: t("home.localMusic"),
             action() {
                 navigate(ROUTE_PATH.LOCAL);
@@ -27,36 +36,63 @@ export default function Operations() {
     ] as const;
 
     return (
-        <View style={styles.container}>
-            {actionButtons.map((action, index) => (
-                <ActionButton
-                    style={[
-                        styles.actionButtonStyle,
-                        index > 0 ? styles.actionMarginLeft : null,
-                    ]}
-                    key={action.title}
-                    {...action}
-                />
+        <View style={styles.grid}>
+            {actionButtons.map(btn => (
+                <TouchableOpacity
+                    key={btn.title}
+                    style={styles.card}
+                    onPress={btn.action}
+                    activeOpacity={0.7}>
+                    <View style={[styles.iconWrap, { backgroundColor: btn.iconBg }]}>
+                        <Icon
+                            name={btn.iconName}
+                            color={btn.iconColor}
+                            size={rpx(28)}
+                        />
+                    </View>
+                    <ThemeText
+                        fontSize="subTitle"
+                        fontWeight="semibold"
+                        style={styles.label}>
+                        {btn.title}
+                    </ThemeText>
+                    <Icon
+                        name="arrow-long-left"
+                        color="rgba(252,252,252,0.4)"
+                        size={rpx(16)}
+                        style={{ transform: [{ scaleX: -1 }] }}
+                    />
+                </TouchableOpacity>
             ))}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        width: rpx(750),
-        paddingHorizontal: rpx(24),
-        marginTop: rpx(12),
-        marginBottom: rpx(24),
+    grid: {
         flexDirection: "row",
-        flexWrap: "nowrap",
+        gap: rpx(12),
+        marginVertical: rpx(16),
+        paddingHorizontal: rpx(16),
     },
-    actionButtonStyle: {
+    card: {
         flex: 1,
-        height: rpx(144),
-        borderRadius: rpx(14),
+        backgroundColor: "#25252b",
+        borderRadius: rpx(18),
+        padding: rpx(20),
+        alignItems: "center",
+        gap: rpx(10),
     },
-    actionMarginLeft: {
-        marginLeft: rpx(16),
+    iconWrap: {
+        width: rpx(48),
+        height: rpx(48),
+        borderRadius: rpx(24),
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    label: {
+        fontSize: rpx(13),
+        fontWeight: "600",
+        color: "#fcfcfc",
     },
 });

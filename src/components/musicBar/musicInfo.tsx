@@ -95,10 +95,10 @@ const styles = StyleSheet.create({
         flexShrink: 1,
     },
     artworkImg: {
-        width: rpx(64),
-        height: rpx(64),
-        borderRadius: rpx(32),
-        marginRight: rpx(16),
+        width: rpx(44),
+        height: rpx(44),
+        borderRadius: rpx(8),
+        marginRight: rpx(12),
     },
 });
 

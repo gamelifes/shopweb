@@ -4,49 +4,42 @@ import rpx from "@/utils/rpx";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showPanel } from "../panels/usePanel";
-import useColors from "@/hooks/useColors";
-import IconButton from "../base/iconButton";
 import TrackPlayer, { useCurrentMusic, useMusicState, useProgress } from "@/core/trackPlayer";
 import { musicIsPaused } from "@/utils/trackUtils";
 import MusicInfo from "./musicInfo";
 import Icon from "@/components/base/icon.tsx";
-import color from "color";
 
+/**
+ * MusicBar matching design's .musicbar:
+ *   [44x44 cover] [song / artist ...flex] [▶ white] [☰]
+ *   ──────── progress bar ────────
+ */
 function SimplePlayBtn() {
     const musicState = useMusicState();
-    const colors = useColors();
-
     const isPaused = musicIsPaused(musicState);
 
     return (
-        <IconButton
-            accessibilityLabel={"播放或暂停歌曲"}
-            name={isPaused ? "play" : "pause"}
-            sizeType={"normal"}
-            hitSlop={{
-                top: 10,
-                left: 10,
-                right: 10,
-                bottom: 10,
-            }}
-            color={colors.musicBarText}
-            onPress={async () => {
-                if (isPaused) {
-                    await TrackPlayer.play();
-                } else {
-                    await TrackPlayer.pause();
-                }
-            }}
-        />
+        <View style={styles.playBtn}>
+            <Icon
+                name={isPaused ? "play" : "pause"}
+                size={rpx(20)}
+                color="#1a1a1e"
+                onPress={async () => {
+                    if (isPaused) {
+                        await TrackPlayer.play();
+                    } else {
+                        await TrackPlayer.pause();
+                    }
+                }}
+            />
+        </View>
     );
 }
+
 function MusicBar() {
     const musicItem = useCurrentMusic();
     const progress = useProgress();
-
     const [showKeyboard, setKeyboardStatus] = useState(false);
-
-    const colors = useColors();
     const safeAreaInsets = useSafeAreaInsets();
 
     useEffect(() => {
@@ -56,7 +49,6 @@ function MusicBar() {
         const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
             setKeyboardStatus(false);
         });
-
         return () => {
             showSubscription.remove();
             hideSubscription.remove();
@@ -72,39 +64,40 @@ function MusicBar() {
             {musicItem && !showKeyboard && (
                 <View
                     style={[
-                        style.wrapper,
+                        styles.wrapper,
                         {
-                            backgroundColor: color(colors.musicBar).alpha(0.92).toString(),
-                            borderTopColor: colors.divider,
-                            borderTopWidth: StyleSheet.hairlineWidth,
-                            paddingBottom: safeAreaInsets.bottom + rpx(8),
-                            paddingLeft: safeAreaInsets.left,
-                            paddingRight: safeAreaInsets.right + rpx(24),
+                            paddingBottom: safeAreaInsets.bottom + rpx(10),
+                            paddingLeft: safeAreaInsets.left + rpx(16),
+                            paddingRight: safeAreaInsets.right + rpx(16),
                         },
                     ]}
                     accessible
-                    accessibilityLabel={`歌曲: ${musicItem.title} 歌手: ${musicItem.artist}`}
-                >
-                    <View style={style.topRow}>
+                    accessibilityLabel={`歌曲: ${musicItem.title} 歌手: ${musicItem.artist}`}>
+                    {/* Top row: cover + info + controls */}
+                    <View style={styles.topRow}>
+                        <View style={styles.coverPlaceholder} />
                         <MusicInfo musicItem={musicItem} />
-                        <View style={style.actionGroup}>
+                        <View style={styles.controls}>
                             <SimplePlayBtn />
                             <Icon
-                                accessible
-                                accessibilityLabel="播放列表"
                                 name="playlist"
-                                size={rpx(56)}
+                                size={rpx(20)}
+                                color="rgba(252,252,252,0.7)"
                                 onPress={() => {
                                     showPanel("PlayList");
                                 }}
-                                color={colors.musicBarText}
-                                style={[style.actionIcon]}
                             />
                         </View>
                     </View>
-                    <View style={[style.progressRow, { paddingLeft: safeAreaInsets.left + rpx(24) }]}>
-                        <View style={[style.progressTrack, { backgroundColor: color(colors.divider).alpha(0.3).toString() }]}>
-                            <View style={[style.progressFill, { width: `${progressPct}%`, backgroundColor: colors.primary }]} />
+                    {/* Progress bar */}
+                    <View style={styles.progressRow}>
+                        <View style={styles.progressTrack}>
+                            <View
+                                style={[
+                                    styles.progressFill,
+                                    { width: `${progressPct}%` },
+                                ]}
+                            />
                         </View>
                     </View>
                 </View>
@@ -115,35 +108,52 @@ function MusicBar() {
 
 export default memo(MusicBar, () => true);
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
     wrapper: {
         width: "100%",
+        paddingTop: rpx(12),
+        borderTopWidth: StyleSheet.hairlineWidth,
     },
     topRow: {
         flexDirection: "row",
         alignItems: "center",
-        height: rpx(100),
+        gap: rpx(12),
     },
-    actionGroup: {
-        width: rpx(140),
-        justifyContent: "flex-end",
+    coverPlaceholder: {
+        // The actual cover is rendered by MusicInfo which has its own FastImage
+        // This space is reserved in the layout
+        display: "none",
+    },
+    controls: {
         flexDirection: "row",
         alignItems: "center",
+        gap: rpx(4),
     },
-    actionIcon: {
-        marginLeft: rpx(24),
+    playBtn: {
+        width: rpx(40),
+        height: rpx(40),
+        borderRadius: rpx(20),
+        backgroundColor: "white",
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     progressRow: {
-        paddingRight: rpx(24),
-        paddingBottom: rpx(10),
+        marginTop: rpx(6),
     },
     progressTrack: {
-        height: rpx(4),
+        height: rpx(3),
+        backgroundColor: "rgba(255,255,255,0.1)",
         borderRadius: rpx(2),
         overflow: "hidden",
     },
     progressFill: {
         height: "100%",
+        backgroundColor: "#f17d34",
         borderRadius: rpx(2),
     },
 });

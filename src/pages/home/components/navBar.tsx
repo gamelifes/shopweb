@@ -5,21 +5,22 @@ import rpx from "@/utils/rpx";
 import useColors from "@/hooks/useColors";
 import ThemeText from "@/components/base/themeText";
 import IconButton from "@/components/base/iconButton";
-import { useI18N } from "@/core/i18n";
 
-// todo icon: = musicFree(引入自定义字体 居中) search
+/**
+ * Home NavBar matching design's .home-nav:
+ *   [☰]  MusicFree  [🔍]
+ */
 export default function NavBar() {
     const navigation = useNavigation<any>();
     const colors = useColors();
-    const { t } = useI18N();
 
     return (
-        <View style={styles.appbar}>
+        <View style={styles.container}>
             <IconButton
-                accessibilityLabel={t("home.openSidebar.a11y")}
                 name="bars-3"
                 style={styles.menu}
                 color={colors.text}
+                sizeType="normal"
                 onPress={() => {
                     navigation?.openDrawer();
                 }}
@@ -27,14 +28,14 @@ export default function NavBar() {
             <ThemeText
                 fontSize="title"
                 fontWeight="bold"
-                style={[styles.title]}>
+                style={styles.title}>
                 MusicFree
             </ThemeText>
             <IconButton
-                accessibilityLabel="搜索"
                 name="magnifying-glass"
                 style={styles.search}
-                color={colors.text}
+                color={colors.textSecondary}
+                sizeType="normal"
                 onPress={() => {
                     navigation?.navigate("search");
                 }}
@@ -44,23 +45,24 @@ export default function NavBar() {
 }
 
 const styles = StyleSheet.create({
-    appbar: {
-        backgroundColor: "transparent",
-        shadowColor: "transparent",
+    container: {
         flexDirection: "row",
         alignItems: "center",
-        width: "100%",
-        height: rpx(88),
-    },
-    title: {
-        marginLeft: rpx(24),
-        flex: 1,
-        fontWeight: "bold",
+        height: rpx(52),
+        paddingHorizontal: rpx(4),
     },
     menu: {
-        marginLeft: rpx(24),
+        width: rpx(40),
+        height: rpx(40),
+    },
+    title: {
+        flex: 1,
+        fontSize: rpx(20),
+        fontWeight: "800",
+        paddingLeft: rpx(8),
     },
     search: {
-        marginRight: rpx(24),
+        width: rpx(40),
+        height: rpx(40),
     },
 });

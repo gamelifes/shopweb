@@ -2,7 +2,7 @@ import Divider from "@/components/base/divider";
 import { IIconName } from "@/components/base/icon.tsx";
 import ListItem from "@/components/base/listItem";
 import PageBackground from "@/components/base/pageBackground";
-import ThemeText from "@/components/base/themeText";
+
 import { showDialog } from "@/components/dialogs/useDialog";
 import { showPanel } from "@/components/panels/usePanel";
 import useColors from "@/hooks/useColors";
@@ -15,7 +15,7 @@ import { useScheduleCloseCountDown } from "@/utils/scheduleClose";
 import timeformat from "@/utils/timeformat";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import React, { memo } from "react";
-import { BackHandler, Platform, StyleSheet, View } from "react-native";
+import { BackHandler, Platform, StyleSheet, View, Text } from "react-native";
 import { default as DeviceInfo } from "react-native-device-info";
 
 const ITEM_HEIGHT = rpx(108);
@@ -80,25 +80,24 @@ function HomeDrawer(props: any) {
         });
     }
 
-
     return (
         <>
             <PageBackground />
             <DrawerContentScrollView {...[props]} style={style.scrollWrapper}>
+                {/* Header matching design: bold brand name */}
                 <View style={style.header}>
-                    <ThemeText fontSize="appbar" fontWeight="bold">
+                    <Text style={style.headerTitle}>
                         {DeviceInfo.getApplicationName()}
-                    </ThemeText>
-                    {/* <IconButton icon={'qrcode-scan'} size={rpx(36)} /> */}
+                    </Text>
                 </View>
-                <View style={[style.card, { backgroundColor: colors.card, borderRadius: rpx(14), overflow: "hidden" }]}>
-                    <ListItem withHorizontalPadding heightType="smallest">
-                        <ListItem.ListItemText
-                            fontSize="subTitle"
-                            fontWeight="bold">
-                            {t("common.setting")}
-                        </ListItem.ListItemText>
-                    </ListItem>
+
+                {/* Settings section */}
+                <View style={style.section}>
+                    <View style={style.sectionTitle}>
+                        <Text style={[style.sectionTitleText, { color: colors.textSecondary }]}>
+                            {t("common.setting").toUpperCase()}
+                        </Text>
+                    </View>
                     {basicSetting.map((item, index) => (
                         <ListItem
                             withHorizontalPadding
@@ -112,14 +111,14 @@ function HomeDrawer(props: any) {
                         </ListItem>
                     ))}
                 </View>
-                <View style={[style.card, { backgroundColor: colors.card, borderRadius: rpx(14), overflow: "hidden" }]}>
-                    <ListItem withHorizontalPadding heightType="smallest">
-                        <ListItem.ListItemText
-                            fontSize="subTitle"
-                            fontWeight="bold">
-                            {t("common.other")}
-                        </ListItem.ListItemText>
-                    </ListItem>
+
+                {/* Other section */}
+                <View style={style.section}>
+                    <View style={style.sectionTitle}>
+                        <Text style={[style.sectionTitleText, { color: colors.textSecondary }]}>
+                            {t("common.other").toUpperCase()}
+                        </Text>
+                    </View>
                     <CountDownItem />
                     {otherSetting.map((item, index) => (
                         <ListItem
@@ -153,16 +152,13 @@ function HomeDrawer(props: any) {
                     </ListItem>
                 </View>
 
-                <View style={[style.card, { backgroundColor: colors.card, borderRadius: rpx(14), overflow: "hidden" }]}>
-                    <ListItem withHorizontalPadding heightType="smallest">
-                        <ListItem.ListItemText
-                            fontSize="subTitle"
-                            fontWeight="bold">
-                            {t("common.software")}
-                        </ListItem.ListItemText>
-                    </ListItem>
-
-
+                {/* Software section */}
+                <View style={style.section}>
+                    <View style={style.sectionTitle}>
+                        <Text style={[style.sectionTitleText, { color: colors.textSecondary }]}>
+                            {t("common.software").toUpperCase()}
+                        </Text>
+                    </View>
                 </View>
 
                 <Divider />
@@ -207,12 +203,29 @@ const style = StyleSheet.create({
     },
 
     header: {
-        height: rpx(120),
+        height: rpx(100),
         width: "100%",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginLeft: rpx(24),
+        justifyContent: "center",
+        paddingLeft: rpx(24),
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: "rgba(255,255,255,0.06)",
+    },
+    headerTitle: {
+        fontSize: rpx(22),
+        fontWeight: "800",
+        color: "#fcfcfc",
+    },
+    section: {
+        paddingVertical: rpx(8),
+    },
+    sectionTitle: {
+        paddingHorizontal: rpx(24),
+        paddingVertical: rpx(12),
+    },
+    sectionTitleText: {
+        fontSize: rpx(11),
+        fontWeight: "700",
+        letterSpacing: rpx(0.5),
     },
     card: {
         marginBottom: rpx(24),

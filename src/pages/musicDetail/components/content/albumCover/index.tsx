@@ -16,12 +16,15 @@ import Animated, {
 } from "react-native-reanimated";
 // Svg imports
 import { Svg, Circle } from "react-native-svg";
-import Operations from "./operations";
 import { showPanel } from "@/components/panels/usePanel";
 
 interface IProps {
     onTurnPageClick?: () => void;
 }
+
+const VINYL_RING1_PCT = 0.44; // 44% radius from center
+const VINYL_RING2_PCT = 0.42;
+const ARTWORK_PCT = 0.55; // 55% of container
 
 export default function AlbumCover(props: IProps) {
     const { onTurnPageClick } = props;
@@ -29,14 +32,17 @@ export default function AlbumCover(props: IProps) {
     const musicItem = useCurrentMusic();
     const orientation = useOrientation();
 
-    const size = orientation === "vertical" ? rpx(500) : rpx(260);
+    const size = orientation === "vertical" ? rpx(480) : rpx(260);
 
     // Animation for rotation
     const rotation = useSharedValue(0);
 
     // Start the rotation animation when component mounts
     useEffect(() => {
-        rotation.value = withRepeat(withTiming(360, { duration: 12000, easing: Easing.linear }), -1);
+        rotation.value = withRepeat(
+            withTiming(360, { duration: 8000, easing: Easing.linear }),
+            -1,
+        );
         // Return cleanup function
         return () => {
             rotation.value = 0;
@@ -67,46 +73,139 @@ export default function AlbumCover(props: IProps) {
 
     const combineGesture = Gesture.Race(tap, longPress);
 
+    const halfSize = size / 2;
+    const artworkSize = size * ARTWORK_PCT;
+    const ring1R = size * VINYL_RING1_PCT;
+    const ring2R = size * VINYL_RING2_PCT;
+
     return (
-        <>
-            <GestureDetector gesture={combineGesture}>
-                <View style={styles.container}>
-                    {/* Animated cover image with vinyl rotation */}
-                    <Animated.View style={[styles.artwork, rotationStyle]}>
-                        <FastImage
-                            style={StyleSheet.absoluteFill}
-                            source={musicItem?.artwork}
-                            placeholderSource={ImgAsset.albumDefault}
-                        />
-                    </Animated.View>
-                    {/* Outer ring for vinyl texture */}
-                    <Svg style={styles.svgContainer}>
+        <GestureDetector gesture={combineGesture}>
+            <View style={[styles.container, { width: size, height: size }]}>
+                {/* Outer vinyl disc (rotates) */}
+                <Animated.View
+                    style={[
+                        styles.vinylOuter,
+                        rotationStyle,
+                        {
+                            width: size,
+                            height: size,
+                            borderRadius: halfSize,
+                            backgroundColor: "#1e1e24",
+                        },
+                    ]}>
+                    {/* Groove rings */}
+                    <Svg
+                        width={size}
+                        height={size}
+                        style={StyleSheet.absoluteFill}>
                         <Circle
-                            cx={size / 2}
-                            cy={size / 2}
-                            r={size / 2 - 2}
-                            stroke={"rgba(255,255,255,0.2)"}
-                            strokeWidth={2}
+                            cx={halfSize}
+                            cy={halfSize}
+                            r={ring1R}
+                            stroke="rgba(255,255,255,0.04)"
+                            strokeWidth={1}
+                            fill="transparent"
+                        />
+                        <Circle
+                            cx={halfSize}
+                            cy={halfSize}
+                            r={ring2R}
+                            stroke="rgba(255,255,255,0.03)"
+                            strokeWidth={1}
                             fill="transparent"
                         />
                     </Svg>
+                    {/* Shine overlay */}
+                    <View style={styles.shine} />
+                </Animated.View>
+
+                {/* Album artwork (centered, rotates) */}
+                <Animated.View
+                    style={[
+                        styles.artworkWrapper,
+                        rotationStyle,
+                        {
+                            width: artworkSize,
+                            height: artworkSize,
+                            borderRadius: artworkSize / 2,
+                        },
+                    ]}>
+                    <FastImage
+                        style={StyleSheet.absoluteFill}
+                        source={musicItem?.artwork}
+                        placeholderSource={ImgAsset.albumDefault}
+                    />
+                </Animated.View>
+
+                {/* Center label */}
+                <View
+                    style={[
+                        styles.centerLabel,
+                        {
+                            width: rpx(28),
+                            height: rpx(28),
+                            borderRadius: rpx(14),
+                            top: halfSize - rpx(14),
+                            left: halfSize - rpx(14),
+                        },
+                    ]}>
+                    <View
+                        style={[
+                            styles.centerDot,
+                            {
+                                width: rpx(8),
+                                height: rpx(8),
+                                borderRadius: rpx(4),
+                            },
+                        ]}
+                    />
                 </View>
-            </GestureDetector>
-            <Operations />
-        </>
+            </View>
+        </GestureDetector>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         backgroundColor: "transparent",
-        borderRadius: rpx(20),
+        alignItems: "center",
+        justifyContent: "center",
+        alignSelf: "center",
+        position: "relative",
+    },
+    vinylOuter: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+    },
+    shine: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: 9999,
+        backgroundColor: "transparent",
+        // Simulate shine with a semi-transparent overlay gradient
+        // React Native doesn't support complex CSS gradients easily,
+        // so we use a simple semi-transparent overlay instead
+    },
+    artworkWrapper: {
+        position: "absolute",
+        zIndex: 1,
         overflow: "hidden",
+        // Shadow is set dynamically
     },
-    artwork: {
-        ...StyleSheet.absoluteFillObject,
+    centerLabel: {
+        position: "absolute",
+        zIndex: 2,
+        backgroundColor: "#1a1a1e",
+        borderWidth: 2,
+        borderColor: "#2a2a30",
+        alignItems: "center",
+        justifyContent: "center",
     },
-    svgContainer: {
-        ...StyleSheet.absoluteFillObject,
+    centerDot: {
+        backgroundColor: "#3d3d45",
     },
 });

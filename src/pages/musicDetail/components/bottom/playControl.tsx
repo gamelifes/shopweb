@@ -6,54 +6,46 @@ import { InteractionManager, StyleSheet, View } from "react-native";
 import Icon from "@/components/base/icon.tsx";
 import { showPanel } from "@/components/panels/usePanel";
 import TrackPlayer, { useMusicState, useRepeatMode } from "@/core/trackPlayer";
-import useOrientation from "@/hooks/useOrientation";
 import delay from "@/utils/delay";
 import { musicIsPaused } from "@/utils/trackUtils";
-import useColors from "@/hooks/useColors";
 
+/**
+ * PlayControl matching design:
+ *   [repeat/shuffle] [prev] [▶/⏸ 56px] [next] [list]
+ *   - Small buttons: 40x40
+ *   - Main button: 56x56 white bg
+ *   - Gap: 8px
+ */
 export default function () {
     const repeatMode = useRepeatMode();
     const musicState = useMusicState();
 
-    const orientation = useOrientation();
-    const colors = useColors();
-
-    console.log(repeatMode, repeatModeConst[repeatMode]);
-
     return (
-        <>
-            <View
-                style={[
-                    style.wrapper,
-                    orientation === "horizontal"
-                        ? {
-                            marginTop: 0,
-                        }
-                        : null,
-                ]}>
+        <View style={styles.wrapper}>
+            <Icon
+                color="rgba(255,255,255,0.75)"
+                name={repeatModeConst[repeatMode].icon}
+                size={rpx(40)}
+                onPress={async () => {
+                    InteractionManager.runAfterInteractions(async () => {
+                        await delay(20, false);
+                        TrackPlayer.toggleRepeatMode();
+                    });
+                }}
+            />
+            <Icon
+                color="rgba(255,255,255,0.75)"
+                name={"skip-left"}
+                size={rpx(40)}
+                onPress={() => {
+                    TrackPlayer.skipToPrevious();
+                }}
+            />
+            <View style={styles.mainBtn}>
                 <Icon
-                    color={colors.textSecondary}
-                    name={repeatModeConst[repeatMode].icon}
-                    size={rpx(48)}
-                    onPress={async () => {
-                        InteractionManager.runAfterInteractions(async () => {
-                            await delay(20, false);
-                            TrackPlayer.toggleRepeatMode();
-                        });
-                    }}
-                />
-                <Icon
-                    color={colors.textSecondary}
-                    name={"skip-left"}
-                    size={rpx(48)}
-                    onPress={() => {
-                        TrackPlayer.skipToPrevious();
-                    }}
-                />
-                <Icon
-                    color={colors.textSecondary}
+                    color="#1a1a1e"
                     name={musicIsPaused(musicState) ? "play" : "pause"}
-                    size={rpx(56)}
+                    size={rpx(28)}
                     onPress={() => {
                         if (musicIsPaused(musicState)) {
                             TrackPlayer.play();
@@ -62,34 +54,46 @@ export default function () {
                         }
                     }}
                 />
-                <Icon
-                    color={colors.textSecondary}
-                    name={"skip-right"}
-                    size={rpx(48)}
-                    onPress={() => {
-                        TrackPlayer.skipToNext();
-                    }}
-                />
-                <Icon
-                    color={colors.textSecondary}
-                    name={"playlist"}
-                    size={rpx(48)}
-                    onPress={() => {
-                        showPanel("PlayList");
-                    }}
-                />
             </View>
-        </>
+            <Icon
+                color="rgba(255,255,255,0.75)"
+                name={"skip-right"}
+                size={rpx(40)}
+                onPress={() => {
+                    TrackPlayer.skipToNext();
+                }}
+            />
+            <Icon
+                color="rgba(255,255,255,0.75)"
+                name={"playlist"}
+                size={rpx(40)}
+                onPress={() => {
+                    showPanel("PlayList");
+                }}
+            />
+        </View>
     );
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
     wrapper: {
-        width: "100%",
-        // Remove marginTop to fit within the row height
-        height: "100%", // Fill the row height
         flexDirection: "row",
-        justifyContent: "space-around",
+        justifyContent: "center",
         alignItems: "center",
+        gap: rpx(8),
+    },
+    mainBtn: {
+        width: rpx(56),
+        height: rpx(56),
+        borderRadius: rpx(28),
+        backgroundColor: "white",
+        alignItems: "center",
+        justifyContent: "center",
+        // Shadow
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        elevation: 8,
     },
 });

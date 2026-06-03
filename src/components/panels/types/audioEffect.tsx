@@ -31,7 +31,7 @@ interface ISliderProps {
     showValue?: boolean;
 }
 
-function EqSlider({ value, min, max, onChange: _onChange, label }: ISliderProps) {
+function EqSlider({ value, min, max, onChange: _onChange, label, showValue, suffix }: ISliderProps) {
     const colors = useColors();
     const pct = max > min ? (value - min) / (max - min) : 0;
 

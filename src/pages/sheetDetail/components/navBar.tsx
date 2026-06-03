@@ -1,105 +1,78 @@
-import AppBar from "@/components/base/appBar";
-import { showDialog } from "@/components/dialogs/useDialog";
 import { showPanel } from "@/components/panels/usePanel.ts";
-import { SortType } from "@/constants/commonConst.ts";
 import { useI18N } from "@/core/i18n";
-import MusicSheet, { useSheetItem } from "@/core/musicSheet";
-import { ROUTE_PATH, useParams } from "@/core/router";
-import { default as Toast, default as toast } from "@/utils/toast";
+import { useSheetItem } from "@/core/musicSheet";
+import { useParams } from "@/core/router";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import rpx from "@/utils/rpx";
+import IconButton from "@/components/base/iconButton";
 
-export default function () {
+export default function NavBar() {
     const navigation = useNavigation<any>();
     const { id = "favorite" } = useParams<"local-sheet-detail">();
     const musicSheet = useSheetItem(id);
     const { t } = useI18N();
 
+    const showMenu = () => {
+        // Open edit sheet info dialog directly
+        showPanel("EditMusicSheetInfo", {
+            musicSheet: musicSheet,
+        });
+    };
+
     return (
-        <>
-            <AppBar
-                menu={[
-                    {
-                        icon: "pencil-outline",
-                        title: t("sheetDetail.editSheetInfo"),
-                        onPress() {
-                            showPanel("EditMusicSheetInfo", {
-                                musicSheet: musicSheet,
-                            });
-                        },
-                    },
-                    {
-                        icon: "pencil-square",
-                        title: t("sheetDetail.batchEditMusic"),
-                        onPress() {
-                            navigation.navigate(ROUTE_PATH.MUSIC_LIST_EDITOR, {
-                                musicList: musicSheet.musicList,
-                                musicSheet: musicSheet,
-                            });
-                        },
-                    },
-                    {
-                        icon: "sort-outline",
-                        title: t("sheetDetail.sortMusic"),
-                        onPress() {
-                            showDialog("RadioDialog", {
-                                content: [
-                                    {
-                                        value: SortType.Title,
-                                        label: t("sheetDetail.sortMusicOption.byTitle"),
-                                    },
-                                    {
-                                        value: SortType.Artist,
-                                        label: t("sheetDetail.sortMusicOption.byArtist"),
-                                    },
-                                    {
-                                        value: SortType.Album,
-                                        label: t("sheetDetail.sortMusicOption.byAlbum"),
-                                    },
-                                    {
-                                        value: SortType.Newest,
-                                        label: t("sheetDetail.sortMusicOption.newest"),
-                                    },
-                                    {
-                                        value: SortType.Oldest,
-                                        label: t("sheetDetail.sortMusicOption.oldest"),
-                                    },
-                                ],
-                                defaultSelected:
-                                    MusicSheet.getSheetMeta(id, "sort") ||
-                                    SortType.None,
-                                title: t("sheetDetail.sortMusic"),
-                                async onOk(value) {
-                                    await MusicSheet.setSortType(
-                                        id,
-                                        value as SortType,
-                                    );
-                                    toast.success(t("toast.sortHasBeenUpdated"));
-                                },
-                            });
-                        },
-                    },
-                    {
-                        icon: "trash-outline",
-                        title: t("sheetDetail.deleteSheet"),
-                        show: id !== "favorite",
-                        onPress() {
-                            showDialog("SimpleDialog", {
-                                title: t("sheetDetail.deleteSheet"),
-                                content: t("sheetDetail.deleteSheetContent", {
-                                    name: musicSheet.title,
-                                }),
-                                onOk: async () => {
-                                    await MusicSheet.removeSheet(id);
-                                    Toast.success(t("toast.deleteSuccess"));
-                                    navigation.goBack();
-                                },
-                            });
-                        },
-                    },
-                ]}>
-                {t("common.sheet")}
-            </AppBar>
-        </>
+        <View style={styles.container}>
+            <IconButton
+                name="arrow-left"
+                sizeType="normal"
+                color="white"
+                style={styles.button}
+                onPress={() => navigation.goBack()}
+            />
+            <Text style={styles.title} numberOfLines={1}>
+                {musicSheet?.title ?? t("common.sheet")}
+            </Text>
+            <TouchableOpacity
+                style={styles.moreButton}
+                onPress={showMenu}>
+                <IconButton
+                    name="ellipsis-vertical"
+                    sizeType="normal"
+                    color="rgba(255,255,255,0.7)"
+                    style={styles.button}
+                    onPress={showMenu}
+                />
+            </TouchableOpacity>
+        </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: "row",
+        alignItems: "center",
+        height: rpx(48),
+        paddingHorizontal: rpx(12),
+    },
+    button: {
+        width: rpx(36),
+        height: rpx(36),
+        borderRadius: rpx(18),
+    },
+    moreButton: {
+        width: rpx(36),
+        height: rpx(36),
+        borderRadius: rpx(18),
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    title: {
+        flex: 1,
+        fontSize: rpx(17),
+        fontWeight: "700",
+        color: "white",
+        textAlign: "center",
+        paddingHorizontal: rpx(12),
+    },
+});
