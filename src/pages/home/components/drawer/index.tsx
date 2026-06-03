@@ -45,13 +45,6 @@ function HomeDrawer(props: any) {
                 navigateToSetting("basic");
             },
         }, {
-            icon: "javascript",
-            title: t("sidebar.pluginManagement"),
-            onPress: () => {
-                navigateToSetting("plugin");
-            },
-        },
-        {
             icon: "t-shirt-outline",
             title: t("sidebar.themeSettings"),
             onPress: () => {

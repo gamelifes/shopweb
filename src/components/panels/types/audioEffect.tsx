@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     StyleSheet,
     View,
     TouchableOpacity,
     Switch,
     ScrollView,
+    PanResponder,
+    LayoutChangeEvent,
 } from "react-native";
 import { useAtom } from "jotai";
 import rpx from "@/utils/rpx";
@@ -20,92 +22,7 @@ import {
     eqInitializedAtom,
 } from "@/store/audioEffectAtom";
 
-/* ============ Slider Component ============ */
-interface ISliderProps {
-    value: number;
-    min: number;
-    max: number;
-    onChange: (v: number) => void;
-    label: string;
-    suffix?: string;
-    showValue?: boolean;
-}
-
-function EqSlider({ value, min, max, onChange: _onChange, label, showValue, suffix }: ISliderProps) {
-    const colors = useColors();
-    const pct = max > min ? (value - min) / (max - min) : 0;
-
-    return (
-        <View style={sliderStyles.container}>
-            <ThemeText fontSize="tag" style={sliderStyles.label}>{label}</ThemeText>
-            <View style={[sliderStyles.track, { backgroundColor: colors.divider }]}>
-                <View
-                    style={[
-                        sliderStyles.fill,
-                        {
-                            backgroundColor: colors.primary,
-                            width: `${Math.round(pct * 100)}%`,
-                        },
-                    ]}
-                />
-                <View
-                    style={[
-                        sliderStyles.thumb,
-                        {
-                            backgroundColor: colors.primary,
-                            left: `${Math.round(pct * 100)}%`,
-                        },
-                    ]}
-                />
-            </View>
-            {showValue && (
-                <ThemeText fontSize="tag" style={sliderStyles.value}>
-                    {value > 0 ? "+" : ""}{value}{suffix}
-                </ThemeText>
-            )}
-        </View>
-    );
-}
-
-const sliderStyles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: rpx(16),
-    },
-    label: {
-        width: rpx(80),
-        textAlign: "right",
-        marginRight: rpx(12),
-    },
-    track: {
-        flex: 1,
-        height: rpx(6),
-        borderRadius: rpx(3),
-        position: "relative",
-        justifyContent: "center",
-    },
-    fill: {
-        position: "absolute",
-        left: 0,
-        height: "100%",
-        borderRadius: rpx(3),
-    },
-    thumb: {
-        width: rpx(20),
-        height: rpx(20),
-        borderRadius: rpx(10),
-        position: "absolute",
-        marginLeft: -rpx(10),
-    },
-    value: {
-        width: rpx(64),
-        textAlign: "right",
-        marginLeft: rpx(8),
-    },
-});
-
-/* ============ Band Gain Slider ============ */
+/* ============ BandSlider (vertical EQ) ============ */
 interface IBandSliderProps {
     freq: string;
     value: number;
@@ -114,49 +31,90 @@ interface IBandSliderProps {
     onChange: (v: number) => void;
 }
 
-function BandSlider({ freq, value, min, max, onChange: _onChange }: IBandSliderProps) {
+function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
     const colors = useColors();
     const range = max - min || 1;
     const pct = (value - min) / range;
     const dbStr = value > 0 ? `+${value}` : `${value}`;
+    const trackRef = useRef<View>(null);
+    const trackHeightRef = useRef(0);
+    const onChangeRef = useRef(onChange);
+    const minRef = useRef(min);
+    const maxRef = useRef(max);
+    const rangeRef = useRef(range);
+    onChangeRef.current = onChange;
+    minRef.current = min;
+    maxRef.current = max;
+    rangeRef.current = range;
+
+    const computeValue = (locationY: number) => {
+        const h = trackHeightRef.current || 1;
+        // Top = max, Bottom = min
+        const ratio = Math.max(0, Math.min(1, locationY / h));
+        return Math.round(maxRef.current - ratio * rangeRef.current);
+    };
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onPanResponderGrant: (evt) => {
+                onChangeRef.current(computeValue(evt.nativeEvent.locationY));
+            },
+            onPanResponderMove: (evt) => {
+                onChangeRef.current(computeValue(evt.nativeEvent.locationY));
+            },
+        })
+    ).current;
 
     return (
         <View style={bandStyles.container}>
             <ThemeText fontSize="tag" style={bandStyles.freqLabel}>{freq}</ThemeText>
-            <View style={bandStyles.sliderArea}>
-                <View style={[bandStyles.track, { backgroundColor: colors.divider }]}>
-                    <View
-                        style={[
-                            bandStyles.midLine,
-                            { backgroundColor: colors.textSecondary, opacity: 0.3 },
-                        ]}
-                    />
+            <View
+                ref={trackRef}
+                style={[bandStyles.sliderArea]}
+                onLayout={(e: LayoutChangeEvent) => {
+                    trackHeightRef.current = e.nativeEvent.layout.height; 
+                }}>
+                <View
+                    style={[bandStyles.track, { backgroundColor: colors.divider }]}
+                    {...panResponder.panHandlers}>
+                    {/* Center line */}
+                    <View style={[bandStyles.midLine, { backgroundColor: colors.textSecondary }]} />
+                    {/* Fill: from center to thumb */}
                     {value !== 0 && (
                         <View
                             style={[
                                 bandStyles.fill,
                                 {
-                                    backgroundColor: value > 0 ? colors.primary : "#e74c3c",
-                                    left: pct > 0.5 ? "50%" : `${pct * 100}%`,
-                                    width: `${Math.abs(pct - 0.5) * 200}%`,
+                                    backgroundColor: value > 0 ? colors.primary : "#6b9eff",
+                                    // fill goes from center to wherever the thumb is
+                                    top: `${Math.min(pct, 0.5) * 100}%`,
+                                    bottom: `${(1 - Math.max(pct, 0.5)) * 100}%`,
                                 },
                             ]}
                         />
                     )}
+                    {/* Thumb */}
                     <View
                         style={[
                             bandStyles.thumb,
                             {
-                                backgroundColor: colors.primary,
-                                left: `${pct * 100}%`,
+                                backgroundColor: colors.text,
+                                top: `${pct * 100}%`,
                             },
                         ]}
                     />
                 </View>
-                <ThemeText fontSize="tag" fontColor="textSecondary" style={bandStyles.dbLabel}>
-                    {dbStr}dB
-                </ThemeText>
             </View>
+            <ThemeText
+                fontSize="tag"
+                style={[
+                    bandStyles.dbLabel,
+                    { color: value > 0 ? colors.primary : "#6b9eff" },
+                ]}>
+                {dbStr}dB
+            </ThemeText>
         </View>
     );
 }
@@ -164,21 +122,24 @@ function BandSlider({ freq, value, min, max, onChange: _onChange }: IBandSliderP
 const bandStyles = StyleSheet.create({
     container: {
         alignItems: "center",
-        marginRight: rpx(12),
+        marginRight: rpx(8),
     },
     freqLabel: {
         marginBottom: rpx(8),
+        fontSize: rpx(22),
+        fontWeight: "500",
+        color: "rgba(255,255,255,0.6)",
     },
     sliderArea: {
         alignItems: "center",
     },
     track: {
-        width: rpx(40),
-        height: rpx(160),
-        borderRadius: rpx(20),
+        width: rpx(48),
+        height: rpx(180),
+        borderRadius: rpx(4),
         position: "relative",
         justifyContent: "center",
-        overflow: "hidden",
+        overflow: "visible",
     },
     midLine: {
         position: "absolute",
@@ -186,19 +147,21 @@ const bandStyles = StyleSheet.create({
         right: 0,
         height: 1,
         top: "50%",
+        opacity: 0.3,
     },
     fill: {
         position: "absolute",
-        top: 0,
-        height: "100%",
-        borderRadius: rpx(20),
+        left: 0,
+        right: 0,
+        borderRadius: rpx(4),
     },
     thumb: {
-        width: rpx(24),
-        height: rpx(24),
-        borderRadius: rpx(12),
+        width: rpx(22),
+        height: rpx(22),
+        borderRadius: rpx(11),
         position: "absolute",
-        marginTop: -rpx(12),
+        marginTop: -rpx(11),
+        marginLeft: rpx(13),
         elevation: 4,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -207,11 +170,128 @@ const bandStyles = StyleSheet.create({
     },
     dbLabel: {
         marginTop: rpx(8),
+        fontSize: rpx(22),
+        fontWeight: "600",
+        fontVariant: ["tabular-nums"],
     },
 });
 
 /* ============ AudioEffect Panel ============ */
 const PRESET_LABELS = ["正常", "流行", "摇滚", "爵士", "古典", "舞曲", "人声", "自定义"];
+
+/* ------------ Effect toggle item ------------ */
+interface IEffectItemProps {
+    icon: string;
+    name: string;
+    desc: string;
+    value: number;
+    onChange: (v: number) => void;
+}
+
+function EffectItem({ icon, name, desc, value, onChange }: IEffectItemProps) {
+    const colors = useColors();
+    const trackRef = useRef<View>(null);
+    const trackWidthRef = useRef(0);
+    const pct = value / 1000;
+
+    const computeValue = (locationX: number) => {
+        const w = trackWidthRef.current || 1;
+        const ratio = Math.max(0, Math.min(1, locationX / w));
+        return Math.round(ratio * 1000);
+    };
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onPanResponderGrant: (evt) => {
+                onChange(computeValue(evt.nativeEvent.locationX)); 
+            },
+            onPanResponderMove: (evt) => {
+                onChange(computeValue(evt.nativeEvent.locationX)); 
+            },
+        })
+    ).current;
+
+    return (
+        <View style={effectStyles.container}>
+            <View style={effectStyles.info}>
+                <View style={effectStyles.iconWrap}>
+                    <ThemeText fontSize="subTitle">{icon}</ThemeText>
+                </View>
+                <View>
+                    <ThemeText fontSize="content" fontWeight="medium" style={effectStyles.name}>{name}</ThemeText>
+                    <ThemeText fontSize="tag" fontColor="textSecondary">{desc}</ThemeText>
+                </View>
+            </View>
+            <View
+                ref={trackRef}
+                style={[effectStyles.slider, { backgroundColor: colors.divider }]}
+                onLayout={(e) => {
+                    trackWidthRef.current = e.nativeEvent.layout.width; 
+                }}
+                {...panResponder.panHandlers}>
+                <View style={[effectStyles.fill, { backgroundColor: colors.primary, width: `${Math.round(pct * 100)}%` }]} />
+                <View style={[effectStyles.thumb, { backgroundColor: colors.text, left: `${Math.round(pct * 100)}%` }]} />
+            </View>
+        </View>
+    );
+}
+
+const effectStyles = StyleSheet.create({
+    container: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingVertical: rpx(10),
+    },
+    info: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: rpx(10),
+        flex: 1,
+    },
+    iconWrap: {
+        width: rpx(32),
+        height: rpx(32),
+        borderRadius: rpx(8),
+        backgroundColor: "rgba(255,255,255,0.06)",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    name: {
+        fontSize: rpx(24),
+        color: "rgba(255,255,255,0.9)",
+    },
+    slider: {
+        width: rpx(100),
+        height: rpx(6),
+        borderRadius: rpx(3),
+        position: "relative",
+        justifyContent: "center",
+        marginLeft: rpx(12),
+    },
+    fill: {
+        position: "absolute",
+        left: 0,
+        height: "100%",
+        borderRadius: rpx(3),
+    },
+    thumb: {
+        width: rpx(16),
+        height: rpx(16),
+        borderRadius: rpx(8),
+        position: "absolute",
+        marginLeft: -rpx(8),
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+    },
+});
+
+/* ============ Main Panel ============ */
 
 export default function AudioEffect() {
     const colors = useColors();
@@ -295,7 +375,7 @@ export default function AudioEffect() {
         <PanelBase
             keyboardAvoidBehavior="none"
             positionMethod="bottom"
-            height={rpx(760)}
+            height={rpx(780)}
             renderBody={() => (
                 <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
                     <PanelHeader title="音效 & 均衡器" hideButtons />
@@ -346,7 +426,7 @@ export default function AudioEffect() {
                                         fontWeight="semibold"
                                         style={
                                             eqState.currentPreset === idx
-                                                ? { color: "#fff" }
+                                                ? { color: colors.text }
                                                 : undefined
                                         }>
                                         {name}
@@ -356,7 +436,7 @@ export default function AudioEffect() {
                         </View>
                     </View>
 
-                    {/* Frequency Bands */}
+                    {/* Frequency Bands - design aligned */}
                     <View style={styles.section}>
                         <ThemeText fontSize="subTitle" fontWeight="semibold" style={styles.sectionLabel}>
                             频率调节
@@ -375,44 +455,38 @@ export default function AudioEffect() {
                         </View>
                     </View>
 
-                    {/* Effects */}
-                    <View style={styles.section}>
-                        <ThemeText fontSize="subTitle" fontWeight="semibold" style={styles.sectionLabel}>
-                            音效增强
-                        </ThemeText>
-                        <EqSlider
-                            label="Bass"
+                    {/* Effects - design aligned */}
+                    <View style={[styles.section, { borderTopWidth: 1, borderTopColor: colors.divider, paddingTop: rpx(16) }]}>
+                        <EffectItem
+                            icon={"🔊"}
+                            name={"Bass Boost"}
+                            desc={"低音增强"}
                             value={eqState.bassBoost}
-                            min={0}
-                            max={1000}
                             onChange={(v) => {
                                 AudioEffectNative.setBassBoost(v);
                                 setEqState(prev => ({ ...prev, bassBoost: v }));
                             }}
-                            suffix=""
                         />
-                        <EqSlider
-                            label="3D"
+                        <EffectItem
+                            icon={"🌐"}
+                            name={"Virtualizer"}
+                            desc={"3D 环绕声"}
                             value={eqState.virtualizer}
-                            min={0}
-                            max={1000}
                             onChange={(v) => {
                                 AudioEffectNative.setVirtualizer(v);
                                 setEqState(prev => ({ ...prev, virtualizer: v }));
                             }}
-                            suffix=""
                         />
-                        <EqSlider
-                            label="Loud"
-                            value={Math.round((eqState.loudness + 50000) / 100)}
-                            min={0}
-                            max={1000}
+                        <EffectItem
+                            icon={"📢"}
+                            name={"Loudness"}
+                            desc={"响度增强"}
+                            value={Math.round((Math.min(Math.max(eqState.loudness + 50000, 0), 100000) / 100))}
                             onChange={(v) => {
                                 const millibels = Math.round(v * 100 - 50000);
                                 AudioEffectNative.setLoudness(millibels);
                                 setEqState(prev => ({ ...prev, loudness: millibels }));
                             }}
-                            suffix="%"
                         />
                     </View>
                 </ScrollView>

@@ -41,18 +41,24 @@ export default function FeatureTags() {
                     style={[
                         styles.tag,
                         tag.active
-                            ? { backgroundColor: "rgba(255,255,255,0.12)", borderColor: "rgba(255,255,255,0.25)" }
-                            : { backgroundColor: "transparent", borderColor: "rgba(255,255,255,0.15)" },
+                            ? {
+                                backgroundColor: colors.text + "1F", // 12% alpha of text color
+                                borderColor: colors.text + "40", // 25%
+                            }
+                            : {
+                                backgroundColor: "transparent",
+                                borderColor: colors.text + "26", // 15%
+                            },
                     ]}>
                     <Text
                         style={[
                             styles.tagText,
-                            { color: tag.active ? colors.text : "rgba(255,255,255,0.6)" },
+                            { color: tag.active ? colors.text : colors.textSecondary },
                         ]}>
                         {tag.label}
                     </Text>
-                    <Text style={[styles.arrow, { color: tag.active ? colors.text : "rgba(255,255,255,0.4)" }]}>
-                        ▸
+                    <Text style={[styles.arrow, { color: tag.active ? colors.text : colors.textSecondary }]}>
+                        ▾
                     </Text>
                 </TouchableOpacity>
             ))}
