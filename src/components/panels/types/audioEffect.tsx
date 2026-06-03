@@ -357,18 +357,38 @@ export default function AudioEffect() {
         AudioEffectNative.setEnabled(val);
     };
 
-    const selectPreset = (idx: number) => {
-        AudioEffectNative.setPreset(idx);
-        setEqState(prev => ({ ...prev, currentPreset: idx }));
+    const selectPreset = async (idx: number) => {
+        await AudioEffectNative.setPreset(idx);
+        // 重新读取该预设的所有参数
+        const numBands = await AudioEffectNative.getNumberOfBands();
+        const gains: number[] = [];
+        for (let i = 0; i < numBands; i++) {
+            gains.push(await AudioEffectNative.getBandGain(i));
+        }
+        const bass = await AudioEffectNative.getBassBoostStrength();
+        const virt = await AudioEffectNative.getVirtualizerStrength();
+        const loud = await AudioEffectNative.getLoudnessGain();
+        setEqState(prev => ({
+            ...prev,
+            currentPreset: idx,
+            bandGains: gains,
+            bassBoost: bass,
+            virtualizer: virt,
+            loudness: loud,
+        }));
     };
 
-    const onBandGain = (band: number, value: number) => {
-        AudioEffectNative.setBandGain(band, value);
-        setEqState(prev => {
-            const gains = [...prev.bandGains];
-            gains[band] = value;
-            return { ...prev, bandGains: gains, currentPreset: 7 };
-        });
+    const onBandGain = async (band: number, value: number) => {
+        try {
+            await AudioEffectNative.setBandGain(band, value);
+            setEqState(prev => {
+                const gains = [...prev.bandGains];
+                gains[band] = value;
+                return { ...prev, bandGains: gains, currentPreset: 7 };
+            });
+        } catch (e) {
+            console.warn(`setBandGain(${band}, ${value}) failed:`, e);
+        }
     };
 
     const freqLabels = ["60Hz", "230Hz", "910Hz", "3.6kHz", "14kHz"];
@@ -458,7 +478,7 @@ export default function AudioEffect() {
                     </View>
 
                     {/* Effects - design aligned */}
-                    <View style={[styles.effectsSection]}>
+                    <View style={[styles.section, { borderTopWidth: 1, borderTopColor: colors.divider, paddingTop: rpx(16) }]}>
                         <EffectItem
                             icon={"🔊"}
                             name={"Bass Boost"}
@@ -530,10 +550,5 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         paddingVertical: rpx(8),
-    },
-    effectsSection: {
-        borderTopWidth: 1,
-        borderTopColor: colors.divider,
-        paddingTop: rpx(16),
     },
 });
