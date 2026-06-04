@@ -78,8 +78,7 @@ function MusicBar() {
                             paddingBottom: safeAreaInsets.bottom + rpx(10),
                             paddingLeft: safeAreaInsets.left + rpx(16),
                             paddingRight: safeAreaInsets.right + rpx(16),
-                            backgroundColor: colors.card + "E6", // rgba(255,255,255,0.9) equivalent
-                            borderTopWidth: 1,
+                            borderTopWidth: StyleSheet.hairlineWidth,
                             borderTopColor: colors.divider,
                         },
                     ]}
@@ -87,7 +86,6 @@ function MusicBar() {
                     accessibilityLabel={`歌曲: ${musicItem.title} 歌手: ${musicItem.artist}`}>
                     {/* Top row: cover + info + controls */}
                     <View style={styles.topRow}>
-                        <View style={[styles.coverPlaceholder, { backgroundColor: "rgba(63,163,181,0.3)" }]} />
                         <MusicInfo musicItem={musicItem} />
                         <View style={styles.controls}>
                             <SimplePlayBtn />
@@ -136,11 +134,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: rpx(12),
-    },
-    coverPlaceholder: {
-        width: rpx(44),
-        height: rpx(44),
-        borderRadius: rpx(8),
     },
     controls: {
         flexDirection: "row",

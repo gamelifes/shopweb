@@ -17,7 +17,7 @@ export const lightTheme = {
         pageBackground: "#fafafa",
         shadow: "#000",
         appBar: "#f17d34",
-        appBarText: "#fefefe",
+        appBarText: "#1a1a2e",
         musicBar: "#f2f2f2",
         musicBarText: "#333333",
         divider: "rgba(0,0,0,0.1)",
