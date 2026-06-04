@@ -1,20 +1,22 @@
+import React, { useState } from "react";
+import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { FlashList } from "@shopify/flash-list";
+import Color from "color";
+
 import Empty from "@/components/base/empty";
 import { showDialog } from "@/components/dialogs/useDialog";
 import { showPanel } from "@/components/panels/usePanel";
 import { ImgAsset } from "@/constants/assetsConst";
 import { useI18N } from "@/core/i18n";
 import MusicSheet, { useSheetsBase, useStarredSheets } from "@/core/musicSheet";
-import useColors from "@/hooks/useColors";
-import { ROUTE_PATH } from "@/core/router";
-import rpx from "@/utils/rpx";
-import Toast from "@/utils/toast";
-import { FlashList } from "@shopify/flash-list";
-import React, { useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { ROUTE_PATH, useNavigate } from "@/core/router";
 import { localPluginPlatform } from "@/constants/commonConst";
 import FastImage from "@/components/base/fastImage";
 import Icon from "@/components/base/icon";
+import Toast from "@/utils/toast";
+import rpx from "@/utils/rpx";
+import useColors from "@/hooks/useColors";
 
 export default function Sheets() {
     const [index, setIndex] = useState(0);
@@ -25,6 +27,9 @@ export default function Sheets() {
     const staredSheets = useStarredSheets();
     const { t } = useI18N();
 
+    // text-muted: 40% opacity of text color
+    const textMuted = Color(colors.text).alpha(0.4).toString();
+
     return (
         <>
             {/* Header tabs matching design */}
@@ -32,18 +37,34 @@ export default function Sheets() {
                 <TouchableOpacity
                     style={styles.tab}
                     onPress={() => setIndex(0)}>
-                    <Text style={[styles.tabText, index === 0 && styles.tabTextActive]}>
+                    <Text
+                        style={[
+                            styles.tabText,
+                            { color: index === 0 ? colors.text : colors.textSecondary },
+                            index === 0 && styles.tabTextActive,
+                            index === 0 && { borderBottomColor: colors.primary },
+                        ]}>
                         {t("home.myPlaylists")}
                     </Text>
-                    <Text style={styles.tabCount}>{allSheets.length}</Text>
+                    <Text style={[styles.tabCount, { color: textMuted }]}>
+                        {allSheets.length}
+                    </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.tab}
                     onPress={() => setIndex(1)}>
-                    <Text style={[styles.tabText, index === 1 && styles.tabTextActive]}>
+                    <Text
+                        style={[
+                            styles.tabText,
+                            { color: index === 1 ? colors.text : colors.textSecondary },
+                            index === 1 && styles.tabTextActive,
+                            index === 1 && { borderBottomColor: colors.primary },
+                        ]}>
                         {t("home.starredPlaylists")}
                     </Text>
-                    <Text style={styles.tabCount}>{staredSheets.length}</Text>
+                    <Text style={[styles.tabCount, { color: textMuted }]}>
+                        {staredSheets.length}
+                    </Text>
                 </TouchableOpacity>
                 <View style={styles.spacer} />
                 <TouchableOpacity
@@ -96,12 +117,12 @@ export default function Sheets() {
                             {/* Info */}
                             <View style={styles.itemInfo}>
                                 <Text
-                                    style={styles.itemName}
+                                    style={[styles.itemName, { color: colors.text }]}
                                     numberOfLines={1}>
                                     {sheet.title}
                                 </Text>
                                 <Text
-                                    style={styles.itemDesc}
+                                    style={[styles.itemDesc, { color: colors.textSecondary }]}
                                     numberOfLines={1}>
                                     {isLocalSheet
                                         ? t("home.songCount", { count: sheet.worksNum })
@@ -135,7 +156,7 @@ export default function Sheets() {
                                     }}>
                                     <Icon
                                         name="trash-outline"
-                                        color={"rgba(252,252,252,0.4)"}
+                                        color={textMuted}
                                         size={rpx(16)}
                                     />
                                 </TouchableOpacity>
@@ -168,15 +189,11 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: rpx(15),
         fontWeight: "500",
-        color: "rgba(252,252,252,0.65)",
     },
     tabTextActive: {
-        color: "#fcfcfc",
         fontWeight: "700",
-        borderBottomColor: "#f17d34",
     },
     tabCount: {
-        color: "rgba(252,252,252,0.4)",
         fontWeight: "400",
         marginLeft: rpx(4),
         fontSize: rpx(13),
@@ -233,11 +250,9 @@ const styles = StyleSheet.create({
     itemName: {
         fontSize: rpx(14),
         fontWeight: "600",
-        color: "#fcfcfc",
     },
     itemDesc: {
         fontSize: rpx(12),
-        color: "rgba(252,252,252,0.65)",
         marginTop: rpx(2),
     },
     itemDelete: {

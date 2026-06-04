@@ -5,6 +5,7 @@ import React from "react";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 import Icon from "@/components/base/icon";
 import ThemeText from "@/components/base/themeText";
+import useColors from "@/hooks/useColors";
 
 /**
  * Operations cards section matching design's .operations-grid:
@@ -13,12 +14,11 @@ import ThemeText from "@/components/base/themeText";
 export default function Operations() {
     const navigate = useNavigate();
     const { t } = useI18N();
+    const colors = useColors();
 
     const actionButtons = [
         {
             iconName: "clock-outline" as const,
-            iconBg: "rgba(63,163,181,0.15)",
-            iconColor: "#3FA3B5",
             title: t("home.playHistory"),
             action() {
                 navigate(ROUTE_PATH.HISTORY);
@@ -26,8 +26,6 @@ export default function Operations() {
         },
         {
             iconName: "folder-music-outline" as const,
-            iconBg: "rgba(241,125,52,0.15)",
-            iconColor: "#f17d34",
             title: t("home.localMusic"),
             action() {
                 navigate(ROUTE_PATH.LOCAL);
@@ -37,31 +35,34 @@ export default function Operations() {
 
     return (
         <View style={styles.grid}>
-            {actionButtons.map(btn => (
+            {actionButtons.map((btn, idx) => (
                 <TouchableOpacity
                     key={btn.title}
-                    style={styles.card}
+                    style={[styles.card, { backgroundColor: colors.card }]}
                     onPress={btn.action}
                     activeOpacity={0.7}>
-                    <View style={[styles.iconWrap, { backgroundColor: btn.iconBg }]}>
+                    <View
+                        style={[
+                            styles.iconWrap,
+                            {
+                                backgroundColor:
+                                    idx === 0
+                                        ? "rgba(63,163,181,0.15)"
+                                        : "rgba(241,125,52,0.15)",
+                            },
+                        ]}>
                         <Icon
                             name={btn.iconName}
-                            color={btn.iconColor}
+                            color={idx === 0 ? "#3FA3B5" : colors.primary}
                             size={rpx(28)}
                         />
                     </View>
                     <ThemeText
                         fontSize="subTitle"
                         fontWeight="semibold"
-                        style={styles.label}>
+                        style={[styles.label, { color: colors.text }]}>
                         {btn.title}
                     </ThemeText>
-                    <Icon
-                        name="arrow-long-left"
-                        color="rgba(252,252,252,0.4)"
-                        size={rpx(16)}
-                        style={{ transform: [{ scaleX: -1 }] }}
-                    />
                 </TouchableOpacity>
             ))}
         </View>
@@ -77,7 +78,6 @@ const styles = StyleSheet.create({
     },
     card: {
         flex: 1,
-        backgroundColor: "#25252b",
         borderRadius: rpx(18),
         padding: rpx(20),
         alignItems: "center",
@@ -93,6 +93,5 @@ const styles = StyleSheet.create({
     label: {
         fontSize: rpx(13),
         fontWeight: "600",
-        color: "#fcfcfc",
     },
 });
