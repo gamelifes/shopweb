@@ -10,6 +10,8 @@ LogBox.ignoreLogs([
 export const ROUTE_PATH = {
     /** 主页 */
     HOME: "home",
+    /** 搜索页 */
+    SEARCH: "search",
     /** 音乐播放页 */
     MUSIC_DETAIL: "music-detail",
     /** 本地歌单页 */
@@ -36,6 +38,9 @@ type RoutePaths = ValueOf<typeof ROUTE_PATH>;
 type RouterParamsBase = Record<RoutePaths, any>;
 /** 路由参数 */
 interface RouterParams extends RouterParamsBase {
+    search: {
+        keyword?: string;
+    };
     home: undefined;
     "music-detail": undefined;
     "local-sheet-detail": {
