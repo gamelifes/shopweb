@@ -8,6 +8,7 @@ import TitleAndTag from "./titleAndTag";
 import ThemeText from "../base/themeText";
 import TrackPlayer from "@/core/trackPlayer";
 import Icon from "@/components/base/icon.tsx";
+import useColors from "@/hooks/useColors";
 
 interface IMusicItemProps {
     index?: string | number;
@@ -31,6 +32,7 @@ export default function MusicItem(props: IMusicItemProps) {
         containerStyle,
         highlight = false,
     } = props;
+    const colors = useColors();
 
     return (
         <ListItem
@@ -71,7 +73,7 @@ export default function MusicItem(props: IMusicItemProps) {
                         {LocalMusicSheet.isLocalMusic(musicItem) && (
                             <Icon
                                 style={styles.icon}
-                                color="#11659a"
+                                color={colors.primary}
                                 name="check-circle"
                                 size={rpx(22)}
                             />
