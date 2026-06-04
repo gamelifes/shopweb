@@ -7,11 +7,13 @@ import { useParams } from "@/core/router";
 import rpx from "@/utils/rpx";
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
+import useColors from "@/hooks/useColors";
 
 export default function Header() {
     const { id = "favorite" } = useParams<"local-sheet-detail">();
     const sheet = useSheetItem(id);
     const { t } = useI18N();
+    const colors = useColors();
 
     const coverUri = sheet?.coverImg ?? sheet?.artwork;
 
@@ -29,7 +31,7 @@ export default function Header() {
                 <View
                     style={[
                         styles.gradient,
-                        { backgroundColor: "#1a1a1e" },
+                        { backgroundColor: colors.pageBackground },
                     ]}
                 />
                 {/* Content */}
@@ -40,10 +42,10 @@ export default function Header() {
                         placeholderSource={ImgAsset.albumDefault}
                     />
                     <View style={styles.meta}>
-                        <Text style={styles.title} numberOfLines={2}>
+                        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
                             {sheet?.title}
                         </Text>
-                        <Text style={styles.desc}>
+                        <Text style={[styles.desc, { color: colors.textSecondary }]}>
                             {t("sheetDetail.totalMusicCount", {
                                 count: sheet?.musicList?.length ?? 0,
                             })}
@@ -103,11 +105,9 @@ const styles = StyleSheet.create({
     title: {
         fontSize: rpx(20),
         fontWeight: "700",
-        color: "white",
     },
     desc: {
         fontSize: rpx(13),
-        color: "rgba(252,252,252,0.65)",
         marginTop: rpx(4),
     },
 });

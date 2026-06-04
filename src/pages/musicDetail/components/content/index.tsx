@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import rpx from "@/utils/rpx";
+import useColors from "@/hooks/useColors";
 import AlbumCover from "./albumCover";
 import Lyric from "./lyric";
 import useOrientation from "@/hooks/useOrientation";
@@ -8,11 +9,21 @@ import Config from "@/core/appConfig";
 import globalStyle from "@/constants/globalStyle";
 import { useCurrentLyricItem, useLyricState } from "@/core/lyricManager";
 import { useCurrentMusic } from "@/core/trackPlayer";
+import Color from "color";
 
 function LyricsPreview() {
     const currentLrcItem = useCurrentLyricItem();
     const { lyrics } = useLyricState();
     const musicItem = useCurrentMusic();
+    const colors = useColors();
+
+    // Compute dynamic opacity based on text color
+    const inactiveOpacity = 0.35; // design: rgba(0,0,0,0.35) light / rgba(255,255,255,0.35) dark
+    const pastOpacity = 0.15; // design: rgba(0,0,0,0.15) light / rgba(255,255,255,0.2) dark
+    const getLineColor = (isActive: boolean, isPast: boolean) => {
+        if (isActive) return colors.text;
+        return Color(colors.text).alpha(isPast ? pastOpacity : inactiveOpacity).toString();
+    };
 
     if (!lyrics || lyrics.length === 0 || !musicItem) return null;
 
@@ -40,8 +51,7 @@ function LyricsPreview() {
                     key={index}
                     style={[
                         styles.lyricLine,
-                        line.isActive && styles.lyricLineActive,
-                        line.isPast && styles.lyricLinePast,
+                        { color: getLineColor(line.isActive, line.isPast) },
                     ]}
                     numberOfLines={1}>
                     {line.lrc}
@@ -104,17 +114,8 @@ const styles = StyleSheet.create({
     },
     lyricLine: {
         fontSize: rpx(14),
-        color: "rgba(255,255,255,0.35)",
         lineHeight: rpx(22),
         marginVertical: rpx(2),
         textAlign: "center",
-    },
-    lyricLineActive: {
-        color: "white",
-        fontWeight: "600",
-        fontSize: rpx(15),
-    },
-    lyricLinePast: {
-        color: "rgba(255,255,255,0.2)",
     },
 });

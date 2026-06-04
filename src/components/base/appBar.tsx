@@ -107,10 +107,7 @@ export default function AppBar(props: IAppBarProps) {
                     containerStyle,
                     {
                         backgroundColor: bgColor,
-                        borderBottomWidth: StyleSheet.hairlineWidth,
-                        borderBottomColor: color(colors.appBar ?? colors.primary)
-                            .alpha(0.12)
-                            .toString(),
+                        borderBottomColor: colors.divider,
                     },
                 ]}>
                 <IconButton
@@ -247,19 +244,20 @@ const styles = StyleSheet.create({
     container: {
         width: "100%",
         zIndex: 10000,
-        height: rpx(76),
+        height: rpx(56),
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: rpx(24),
+        paddingHorizontal: rpx(16),
+        borderBottomWidth: 1,
     },
     content: {
         flexDirection: "row",
         flexBasis: 0,
         alignItems: "center",
-        paddingHorizontal: rpx(24),
+        paddingHorizontal: rpx(12),
     },
     rightButton: {
-        marginLeft: rpx(28),
+        marginLeft: rpx(12),
     },
     blocker: {
         position: "absolute",
