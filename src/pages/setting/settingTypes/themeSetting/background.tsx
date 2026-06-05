@@ -8,11 +8,9 @@ import ThemeCard from "./themeCard";
 import { ROUTE_PATH, useNavigate } from "@/core/router";
 import Theme, { lightTheme, darkTheme } from "@/core/theme";
 import { useI18N } from "@/core/i18n";
-import { useTheme } from "@react-navigation/native";
 
 export default function Background() {
     const { t } = useI18N();
-    const { dark } = useTheme();
 
     const themeBackground = useAppConfig("theme.background");
     const themeSelectedTheme = useAppConfig("theme.selectedTheme");
