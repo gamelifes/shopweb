@@ -1,4 +1,4 @@
-package fun.upup.musicfree.player
+package `fun`.upup.musicfree.player
 
 import android.util.Log
 import com.facebook.react.bridge.Promise

@@ -1,4 +1,4 @@
-package fun.upup.musicfree.audioEffect
+package `fun`.upup.musicfree.audioEffect
 
 import android.content.Context
 import android.media.AudioManager
