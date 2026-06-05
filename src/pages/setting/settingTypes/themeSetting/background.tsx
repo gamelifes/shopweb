@@ -6,11 +6,13 @@ import ThemeText from "@/components/base/themeText";
 import Config, { useAppConfig } from "@/core/appConfig";
 import ThemeCard from "./themeCard";
 import { ROUTE_PATH, useNavigate } from "@/core/router";
-import Theme from "@/core/theme";
+import Theme, { lightTheme, darkTheme } from "@/core/theme";
 import { useI18N } from "@/core/i18n";
+import { useTheme } from "@react-navigation/native";
 
 export default function Background() {
     const { t } = useI18N();
+    const { dark } = useTheme();
 
     const themeBackground = useAppConfig("theme.background");
     const themeSelectedTheme = useAppConfig("theme.selectedTheme");
@@ -90,7 +92,7 @@ export default function Background() {
             </ThemeText>
             <View style={style.sectionWrapper}>
                 <ThemeCard
-                    preview="#fff"
+                    preview={dark ? darkTheme.colors.card : lightTheme.colors.card}
                     title={t("themeSettings.lightMode")}
                     selected={themeSelectedTheme === "p-light"}
                     onPress={() => {
@@ -101,7 +103,7 @@ export default function Background() {
                     }}
                 />
                 <ThemeCard
-                    preview="#131313"
+                    preview={darkTheme.colors.card}
                     title={t("themeSettings.darkMode")}
                     selected={themeSelectedTheme === "p-dark"}
                     onPress={() => {

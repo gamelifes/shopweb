@@ -9,6 +9,7 @@ import {
     LayoutChangeEvent,
 } from "react-native";
 import { useAtom } from "jotai";
+import { useTheme } from "@react-navigation/native";
 import rpx from "@/utils/rpx";
 import useColors from "@/hooks/useColors";
 import ThemeText from "@/components/base/themeText";
@@ -16,6 +17,7 @@ import PanelBase from "../base/panelBase";
 import PanelHeader from "../base/panelHeader";
 import Divider from "@/components/base/divider";
 import AudioEffectNative from "@/native/audioEffect";
+import Color from "color";
 import {
     soundEffectEnabledAtom,
     eqStateAtom,
@@ -37,7 +39,7 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
     const pct = (value - min) / range;
     const dbStr = value > 0 ? `+${value}` : `${value}`;
     const trackRef = useRef<View>(null);
-    const trackHeightRef = useRef(0);
+    const trackWidthRef = useRef(0);
     const onChangeRef = useRef(onChange);
     const minRef = useRef(min);
     const maxRef = useRef(max);
@@ -47,11 +49,11 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
     maxRef.current = max;
     rangeRef.current = range;
 
-    const computeValue = (locationY: number) => {
-        const h = trackHeightRef.current || 1;
-        // Top = max, Bottom = min
-        const ratio = Math.max(0, Math.min(1, locationY / h));
-        return Math.round(maxRef.current - ratio * rangeRef.current);
+    const computeValue = (locationX: number) => {
+        const w = trackWidthRef.current || 1;
+        // Left = min, Right = max
+        const ratio = Math.max(0, Math.min(1, locationX / w));
+        return Math.round(minRef.current + ratio * rangeRef.current);
     };
 
     const panResponder = useRef(
@@ -59,10 +61,10 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
             onStartShouldSetPanResponder: () => true,
             onMoveShouldSetPanResponder: () => true,
             onPanResponderGrant: (evt) => {
-                onChangeRef.current(computeValue(evt.nativeEvent.locationY));
+                onChangeRef.current(computeValue(evt.nativeEvent.locationX));
             },
             onPanResponderMove: (evt) => {
-                onChangeRef.current(computeValue(evt.nativeEvent.locationY));
+                onChangeRef.current(computeValue(evt.nativeEvent.locationX));
             },
         })
     ).current;
@@ -74,23 +76,22 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
                 ref={trackRef}
                 style={[bandStyles.sliderArea]}
                 onLayout={(e: LayoutChangeEvent) => {
-                    trackHeightRef.current = e.nativeEvent.layout.height; 
+                    trackWidthRef.current = e.nativeEvent.layout.width; 
                 }}>
                 <View
                     style={[bandStyles.track, { backgroundColor: colors.divider }]}
                     {...panResponder.panHandlers}>
                     {/* Center line */}
                     <View style={[bandStyles.midLine, { backgroundColor: colors.textSecondary + "80" }]} />
-                    {/* Fill: from center to thumb */}
+                    {/* Fill: from min to thumb */}
                     {value !== 0 && (
                         <View
                             style={[
                                 bandStyles.fill,
                                 {
-                                    backgroundColor: value > 0 ? colors.primary : colors.textSecondary,
-                                    // fill goes from center to wherever the thumb is
-                                    top: `${Math.min(pct, 0.5) * 100}%`,
-                                    bottom: `${(1 - Math.max(pct, 0.5)) * 100}%`,
+                                    backgroundColor: value >= 0 ? colors.primary : colors.textSecondary,
+                                    // fill goes from min to wherever the thumb is
+                                    width: `${(pct) * 100}%`,
                                 },
                             ]}
                         />
@@ -101,18 +102,14 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
                             bandStyles.thumb,
                             {
                                 backgroundColor: colors.text,
-                                top: `${pct * 100}%`,
+                                // Center thumb at pct position (0% left = min, 100% left = max)
+                                left: `${pct * 100}%`,
                                 shadowColor: colors.text + "80",
                             },
                         ]}
                     />
                 </View>
             </View>
-            <ThemeText
-                fontSize="tag"
-                fontColor={value > 0 ? "primary" : "textSecondary"}>
-                {dbStr}dB
-            </ThemeText>
         </View>
     );
 }
@@ -131,8 +128,8 @@ const bandStyles = StyleSheet.create({
         alignItems: "center",
     },
     track: {
-        width: rpx(4),
-        height: rpx(88),
+        width: rpx(88),
+        height: rpx(4),
         borderRadius: rpx(2),
         position: "relative",
         justifyContent: "center",
@@ -140,10 +137,10 @@ const bandStyles = StyleSheet.create({
     },
     midLine: {
         position: "absolute",
-        left: 0,
-        right: 0,
-        height: 1,
-        top: "50%",
+        top: 0,
+        bottom: 0,
+        width: 1,
+        left: "50%",
         opacity: 0.3,
     },
     fill: {
@@ -157,8 +154,8 @@ const bandStyles = StyleSheet.create({
         height: rpx(18),
         borderRadius: rpx(9),
         position: "absolute",
-        marginTop: -rpx(9),
-        marginLeft: -rpx(9), // center on track
+        top: "50%",
+        marginTop: -rpx(9), // vertical center
         elevation: 4,
         shadowColor: "rgba(0,0,0,0.3)",
         shadowOffset: { width: 0, height: 1 },
@@ -187,6 +184,7 @@ interface IEffectItemProps {
 
 function EffectItem({ icon, name, desc, value, onChange }: IEffectItemProps) {
     const colors = useColors();
+    const { dark } = useTheme();
     const trackRef = useRef<View>(null);
     const trackWidthRef = useRef(0);
     const pct = value / 1000;
@@ -196,6 +194,9 @@ function EffectItem({ icon, name, desc, value, onChange }: IEffectItemProps) {
         const ratio = Math.max(0, Math.min(1, locationX / w));
         return Math.round(ratio * 1000);
     };
+
+    // Slider track color per design: light rgba(0,0,0,0.06), dark rgba(255,255,255,0.1)
+    const sliderTrackColor = Color(colors.text).alpha(dark ? 0.1 : 0.06).toString();
 
     const panResponder = useRef(
         PanResponder.create({
@@ -218,24 +219,36 @@ function EffectItem({ icon, name, desc, value, onChange }: IEffectItemProps) {
                 </View>
                 <View>
                     <ThemeText fontSize="content" fontWeight="medium" style={[effectStyles.name, { color: colors.text }]}>{name}</ThemeText>
-                    <ThemeText fontSize="tag" fontColor="textSecondary">{desc}</ThemeText>
+                    <ThemeText fontSize="tag" fontColor="textMuted">{desc}</ThemeText>
                 </View>
             </View>
             <View
                 ref={trackRef}
-                style={[effectStyles.slider, { backgroundColor: colors.divider }]}
+                style={[effectStyles.slider, { backgroundColor: sliderTrackColor }]}
                 onLayout={(e) => {
-                    trackWidthRef.current = e.nativeEvent.layout.width; 
+                    trackWidthRef.current = e.nativeEvent.layout.width;
                 }}
                 {...panResponder.panHandlers}>
-                <View style={[effectStyles.fill, { backgroundColor: colors.primary, width: `${Math.round(pct * 100)}%` }]} />
+                {/* Fill: from min to thumb */}
+                {value !== 0 && (
+                    <View
+                        style={[
+                            effectStyles.fill,
+                            {
+                                backgroundColor: value >= 0 ? colors.primary : colors.textSecondary,
+                                width: `${pct * 100}%`,
+                            },
+                        ]}
+                    />
+                )}
+                {/* Thumb */}
                 <View
                     style={[
                         effectStyles.thumb,
                         {
                             backgroundColor: colors.text,
+                            left: `${pct * 100}%`,
                             shadowColor: colors.text + "80",
-                            left: `${Math.round(pct * 100)}%`,
                         },
                     ]}
                 />
@@ -286,6 +299,8 @@ const effectStyles = StyleSheet.create({
         height: rpx(14),
         borderRadius: rpx(7),
         position: "absolute",
+        top: "50%",
+        marginTop: -rpx(7),
         marginLeft: -rpx(7),
         elevation: 3,
         shadowColor: "rgba(0,0,0,0.3)",
@@ -401,7 +416,7 @@ export default function AudioEffect() {
             positionMethod="bottom"
             height={rpx(780)}
             renderBody={() => (
-                <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+                <ScrollView style={[styles.scroll, { backgroundColor: colors.card }]} showsVerticalScrollIndicator={false}>
                     <PanelHeader title="音效 & 均衡器" hideButtons />
                     <Divider />
 
@@ -442,16 +457,16 @@ export default function AudioEffect() {
                                             borderColor:
                                                 eqState.currentPreset === idx
                                                     ? colors.primary
-                                                    : colors.divider,
+                                                    : "transparent",
                                         },
                                     ]}>
                                     <ThemeText
                                         fontSize="tag"
                                         fontWeight="semibold"
-                                        style={
+                                        fontColor={
                                             eqState.currentPreset === idx
-                                                ? { color: colors.text }
-                                                : undefined
+                                                ? "card"
+                                                : "text"
                                         }>
                                         {name}
                                     </ThemeText>

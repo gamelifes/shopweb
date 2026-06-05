@@ -74,20 +74,20 @@ function HomeDrawer(props: any) {
     }
 
     return (
-        <>
+        <React.Fragment>
             <PageBackground />
-            <DrawerContentScrollView {...[props]} style={style.scrollWrapper}>
+            <DrawerContentScrollView {...[props]} style={styles.scrollWrapper}>
                 {/* Header matching design: bold brand name */}
-                <View style={style.header}>
-                    <Text style={style.headerTitle}>
+                <View style={[styles.header, { borderBottomColor: colors.divider }]}>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>
                         {DeviceInfo.getApplicationName()}
                     </Text>
                 </View>
 
                 {/* Settings section */}
-                <View style={style.section}>
-                    <View style={style.sectionTitle}>
-                        <Text style={[style.sectionTitleText, { color: colors.textSecondary }]}>
+                <View style={styles.section}>
+                    <View style={styles.sectionTitle}>
+                        <Text style={[styles.sectionTitleText, { color: colors.textMuted }]}>
                             {t("common.setting").toUpperCase()}
                         </Text>
                     </View>
@@ -106,9 +106,9 @@ function HomeDrawer(props: any) {
                 </View>
 
                 {/* Other section */}
-                <View style={style.section}>
-                    <View style={style.sectionTitle}>
-                        <Text style={[style.sectionTitleText, { color: colors.textSecondary }]}>
+                <View style={styles.section}>
+                    <View style={styles.sectionTitle}>
+                        <Text style={[styles.sectionTitleText, { color: colors.textMuted }]}>
                             {t("common.other").toUpperCase()}
                         </Text>
                     </View>
@@ -146,9 +146,9 @@ function HomeDrawer(props: any) {
                 </View>
 
                 {/* Software section */}
-                <View style={style.section}>
-                    <View style={style.sectionTitle}>
-                        <Text style={[style.sectionTitleText, { color: colors.textSecondary }]}>
+                <View style={styles.section}>
+                    <View style={styles.sectionTitle}>
+                        <Text style={[styles.sectionTitleText, { color: colors.textMuted }]}>
                             {t("common.software").toUpperCase()}
                         </Text>
                     </View>
@@ -169,8 +169,9 @@ function HomeDrawer(props: any) {
                 </ListItem>
                 <ListItem
                     withHorizontalPadding
-                    onPress={async () => {
-                        await TrackPlayer.reset();
+                    onPress={() => {
+                        // 仅安卓生效
+                        TrackPlayer.reset();
                         NativeUtils.exitApp();
                     }}>
                     <ListItem.ListItemIcon
@@ -180,16 +181,15 @@ function HomeDrawer(props: any) {
                     <ListItem.Content title={t("sidebar.exitApp")} />
                 </ListItem>
             </DrawerContentScrollView>
-        </>
+        </React.Fragment>
     );
 }
 
 export default memo(HomeDrawer, () => true);
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
-        backgroundColor: "#999999",
     },
     scrollWrapper: {
         paddingTop: rpx(12),
@@ -201,12 +201,10 @@ const style = StyleSheet.create({
         justifyContent: "center",
         paddingLeft: rpx(24),
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: "rgba(255,255,255,0.06)",
     },
     headerTitle: {
         fontSize: rpx(22),
         fontWeight: "800",
-        color: "#fcfcfc",
     },
     section: {
         paddingVertical: rpx(8),

@@ -6,10 +6,11 @@ import { StyleSheet, View, TouchableOpacity } from "react-native";
 import Icon from "@/components/base/icon";
 import ThemeText from "@/components/base/themeText";
 import useColors from "@/hooks/useColors";
+import Color from "color";
 
 /**
  * Operations cards section matching design's .operations-grid:
- *   2-column grid with op-card (icon circle + label + arrow)
+ *   2-column grid with op-card (icon circle + label)
  */
 export default function Operations() {
     const navigate = useNavigate();
@@ -35,7 +36,7 @@ export default function Operations() {
 
     return (
         <View style={styles.grid}>
-            {actionButtons.map((btn, idx) => (
+            {actionButtons.map((btn) => (
                 <TouchableOpacity
                     key={btn.title}
                     style={[styles.card, { backgroundColor: colors.card }]}
@@ -45,15 +46,12 @@ export default function Operations() {
                         style={[
                             styles.iconWrap,
                             {
-                                backgroundColor:
-                                    idx === 0
-                                        ? "rgba(63,163,181,0.15)"
-                                        : "rgba(241,125,52,0.15)",
+                                backgroundColor: Color(colors.primary).alpha(0.15).toString(),
                             },
                         ]}>
                         <Icon
                             name={btn.iconName}
-                            color={idx === 0 ? "#3FA3B5" : colors.primary}
+                            color={colors.primary}
                             size={rpx(28)}
                         />
                     </View>

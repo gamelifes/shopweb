@@ -9,6 +9,8 @@ export interface CustomizedColors extends IColors {
     text: string;
     /** 副标题文字颜色 */
     textSecondary?: string;
+    /** 弱化文字颜色 */
+    textMuted?: string;
     /** 高亮文本颜色，也就是主色调 */
     textHighlight?: string;
     /** 页面背景 */
@@ -35,6 +37,10 @@ export interface CustomizedColors extends IColors {
     card: string;
     /** paneltabbar 背景色 */
     tabBar?: string;
+    /** 主色调浅色变体 */
+    primaryLight?: string;
+    /** 主色调深色变体 */
+    primaryDark?: string;
 }
 
 export default function useColors() {
@@ -43,7 +49,8 @@ export default function useColors() {
     const cColors: CustomizedColors = useMemo(() => {
         return {
             ...colors,
-            textSecondary: Color(colors.text).alpha(0.7).toString(),
+            textSecondary: Color(colors.text).alpha(0.65).toString(),
+            textMuted: Color(colors.text).alpha(0.4).toString(),
             // @ts-ignore
             background: colors.pageBackground ?? colors.background,
         };
