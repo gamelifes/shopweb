@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { LayoutRectangle, StyleSheet, Text, View } from "react-native";
 import rpx from "@/utils/rpx";
 import useDelayFalsy from "@/hooks/useDelayFalsy";
+import useColors from "@/hooks/useColors";
 import { FlatList, Gesture, GestureDetector } from "react-native-gesture-handler";
 import { fontSizeConst } from "@/constants/uiConst";
 import Loading from "@/components/base/loading";

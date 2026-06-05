@@ -16,9 +16,18 @@ function warn(message: string, config?: IToastConfig) {
     });
 }
 
+function error(message: string, config?: IToastConfig) {
+    showToast({
+        message,
+        ...config,
+        type: "error",
+    });
+}
+
 const Toast = {
     success,
     warn,
+    error,
 };
 
 export default Toast;

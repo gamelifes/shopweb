@@ -38,7 +38,6 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
     const colors = useColors();
     const range = max - min || 1;
     const pct = (value - min) / range;
-    const dbStr = value > 0 ? `+${value}` : `${value}`;
     const trackRef = useRef<View>(null);
     const trackWidthRef = useRef(0);
     const onChangeRef = useRef(onChange);
@@ -77,11 +76,13 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
                 ref={trackRef}
                 style={[bandStyles.sliderArea]}
                 onLayout={(e: LayoutChangeEvent) => {
-                    trackWidthRef.current = e.nativeEvent.layout.width; 
+                    trackWidthRef.current = e.nativeEvent.layout.width;
                 }}>
                 <View
                     style={[bandStyles.track, { backgroundColor: colors.divider }]}
                     {...panResponder.panHandlers}>
+                    {/* Invisible enlarged hit area to make touch more reliable */}
+                    <View style={bandStyles.trackHitArea} {...panResponder.panHandlers} />
                     {/* Center line */}
                     <View style={[bandStyles.midLine, { backgroundColor: colors.textSecondary + "80" }]} />
                     {/* Fill: from min to thumb */}
@@ -137,6 +138,15 @@ const bandStyles = StyleSheet.create({
         position: "relative",
         justifyContent: "center",
         overflow: "visible",
+    },
+    trackHitArea: {
+        // Invisible larger hit area to capture touch events reliably,
+        // especially when the track is thin or wrapped in a ScrollView.
+        position: "absolute",
+        top: -rpx(20),
+        bottom: -rpx(20),
+        left: 0,
+        right: 0,
     },
     midLine: {
         position: "absolute",
@@ -404,8 +414,10 @@ export default function AudioEffect() {
     };
 
     const onBandGain = async (band: number, value: number) => {
+        console.log(`[onBandGain] band=${band}, value=${value}`);
         try {
             await AudioEffectNative.setBandGain(band, value);
+            console.log("[onBandGain] setBandGain succeeded");
             setEqState(prev => {
                 const gains = [...prev.bandGains];
                 gains[band] = value;
@@ -413,7 +425,7 @@ export default function AudioEffect() {
             });
         } catch (e) {
             console.warn(`setBandGain(${band}, ${value}) failed:`, e);
-            Toast.error(`频段调节失败`);
+            Toast.error("频段调节失败");
         }
     };
 
@@ -576,5 +588,10 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         paddingVertical: rpx(8),
+    },
+    bandColumn: {
+        flexDirection: "column",
+        width: "100%",
+        paddingVertical: rpx(4),
     },
 });

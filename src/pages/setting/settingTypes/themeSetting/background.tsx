@@ -92,7 +92,7 @@ export default function Background() {
             </ThemeText>
             <View style={style.sectionWrapper}>
                 <ThemeCard
-                    preview={dark ? darkTheme.colors.card : lightTheme.colors.card}
+                    preview={lightTheme.colors.card}
                     title={t("themeSettings.lightMode")}
                     selected={themeSelectedTheme === "p-light"}
                     onPress={() => {

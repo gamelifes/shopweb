@@ -36,6 +36,7 @@ export default function ThemeCard(props: IThemeCardProps) {
                 <View
                     style={[
                         styles.container,
+                        { backgroundColor: colors.card },
                         isPreviewColor
                             ? {
                                 backgroundColor: preview,

@@ -23,7 +23,7 @@ import Icon from "@/components/base/icon.tsx";
 
 export interface IToastConfig {
     /** 类型 */
-    type: "success" | "warn";
+    type: "success" | "warn" | "error";
     /** 消息内容 */
     message?: string;
     /** 行动点 */
@@ -52,6 +52,10 @@ const typeConfig = {
     warn: {
         name: "exclamation-circle",
         color: "#de7622",
+    },
+    error: {
+        name: "exclamation-circle",
+        color: "#FC5F5F",
     },
 } as const;
 
