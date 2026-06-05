@@ -19,6 +19,7 @@ import Divider from "@/components/base/divider";
 import AudioEffectNative from "@/native/audioEffect";
 import Color from "color";
 import Toast from "@/utils/toast";
+import Config from "@/core/appConfig";
 import {
     soundEffectEnabledAtom,
     eqStateAtom,
@@ -204,6 +205,7 @@ function EffectItem({ icon, name, desc, value, onChange }: IEffectItemProps) {
 
     const computeValue = (locationX: number) => {
         const w = trackWidthRef.current || 1;
+        // Range: 0 - 1000
         const ratio = Math.max(0, Math.min(1, locationX / w));
         return Math.round(ratio * 1000);
     };
@@ -335,10 +337,9 @@ export default function AudioEffect() {
 
     useEffect(() => {
         initEffect();
-        return () => {
-            AudioEffectNative.release();
-            setInitialized(false);
-        };
+        // 注意：不再在 unmount 时 release()
+        // Equalizer 实例保留，避免关闭音效面板后丢失用户设置
+        // 仅在 app 真正退出时由原生模块释放
     }, []);
 
     const initEffect = async () => {
@@ -352,12 +353,17 @@ export default function AudioEffect() {
             const names = await AudioEffectNative.getPresetNames();
             const numBands = await AudioEffectNative.getNumberOfBands();
             const freqs: number[] = [];
-            const gains: number[] = [];
             for (let i = 0; i < numBands; i++) {
                 freqs.push(await AudioEffectNative.getCenterFreq(i));
-                gains.push(await AudioEffectNative.getBandGain(i));
             }
 
+            // 优先使用持久化的设置（保留用户上次调节的参数）
+            // 注意：native 端的 setBandGain/setBassBoost/setVirtualizer/setLoudness
+            // 在 init() 时会保留之前的状态（因为我们不再 release），所以直接读取即可
+            const gains: number[] = [];
+            for (let i = 0; i < numBands; i++) {
+                gains.push(await AudioEffectNative.getBandGain(i));
+            }
             const preset = await AudioEffectNative.getCurrentPreset();
             const bass = await AudioEffectNative.getBassBoostStrength();
             const virt = await AudioEffectNative.getVirtualizerStrength();
@@ -381,6 +387,31 @@ export default function AudioEffect() {
             setLoading(false);
         }
     };
+
+    // 持久化：监听 eqState 变化
+    useEffect(() => {
+        if (eqState.bandGains.length > 0) {
+            Config.setConfig("audioEffect.bandGains", eqState.bandGains);
+            Config.setConfig("audioEffect.centerFreqs", eqState.centerFreqs);
+            Config.setConfig("audioEffect.currentPreset", eqState.currentPreset);
+            Config.setConfig("audioEffect.bassBoost", eqState.bassBoost);
+            Config.setConfig("audioEffect.virtualizer", eqState.virtualizer);
+            Config.setConfig("audioEffect.loudness", eqState.loudness);
+        }
+    }, [eqState]);
+
+    // 持久化：监听 enabled 变化
+    useEffect(() => {
+        Config.setConfig("audioEffect.enabled", enabled);
+    }, [enabled]);
+
+    // 启动时从持久化恢复（应用启动时，不等面板打开）
+    useEffect(() => {
+        const persistedEnabled = Config.getConfig("audioEffect.enabled");
+        if (persistedEnabled !== undefined) {
+            setEnabled(persistedEnabled);
+        }
+    }, []);
 
     const toggleEnabled = (val: boolean) => {
         setEnabled(val);

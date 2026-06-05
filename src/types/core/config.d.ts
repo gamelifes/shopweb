@@ -64,6 +64,15 @@ export interface IAppConfigProperties {
     "webdav.username": string;
     "webdav.password": string;
 
+    // Audio Effect (EQ)
+    "audioEffect.enabled": boolean;
+    "audioEffect.bandGains": number[];
+    "audioEffect.centerFreqs": number[];
+    "audioEffect.currentPreset": number;
+    "audioEffect.bassBoost": number;
+    "audioEffect.virtualizer": number;
+    "audioEffect.loudness": number;
+
     // Debug（保持嵌套结构）
     "debug.errorLog": boolean;
     "debug.traceLog": boolean;
