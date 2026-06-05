@@ -14,10 +14,11 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
+import `fun`.upup.musicfree.audioEffect.AudioEffectPackage
 import `fun`.upup.musicfree.lyricUtil.LyricUtilPackage
 import `fun`.upup.musicfree.mp3Util.Mp3UtilPackage
+import `fun`.upup.musicfree.player.PlayerPackage
 import `fun`.upup.musicfree.utils.UtilsPackage
-import `fun`.upup.musicfree.audioEffect.AudioEffectPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -31,6 +32,7 @@ class MainApplication : Application(), ReactApplication {
               add(Mp3UtilPackage())
               add(LyricUtilPackage())
               add(AudioEffectPackage())
+              add(PlayerPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"
