@@ -105,7 +105,7 @@ export default function AudioEffect() {
                             <ThemeText
                                 fontSize="tag"
                                 style={{ color: colors.textMuted, textAlign: "center", marginTop: rpx(12) }}>
-                                {`Android AudioEffect 需绑定到具体音频流。\n本应用使用 react-native-track-player，无法暴露 audio session id，因此无法实现实时均衡。`}
+                                {"Android AudioEffect 需绑定到具体音频流。\n本应用使用 react-native-track-player，无法暴露 audio session id，因此无法实现实时均衡。"}
                             </ThemeText>
                         </View>
                     </ScrollView>
@@ -160,7 +160,7 @@ export default function AudioEffect() {
                         <ThemeText
                             fontSize="tag"
                             style={{ color: colors.textMuted, marginTop: rpx(16), textAlign: "center" }}>
-                            {`注意：精细滑块和 Bass Boost 等功能需绑定音频流，\n当前播放栈不支持。`}
+                            {"注意：精细滑块和 Bass Boost 等功能需绑定音频流，\n当前播放栈不支持。"}
                         </ThemeText>
                     </View>
                 </ScrollView>
