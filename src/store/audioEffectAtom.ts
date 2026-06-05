@@ -1,27 +1,21 @@
 import { atom } from "jotai";
 
-export const soundEffectEnabledAtom = atom(false);
+/** 音效是否启用 */
+export const soundEffectEnabledAtom = atom<boolean>(false);
 
+/** 设备是否支持音效 */
+export const soundEffectSupportedAtom = atom<boolean>(false);
+
+/** 初始化标志 */
+export const eqInitializedAtom = atom<boolean>(false);
+
+/** 均衡器状态（方案D：不再维护精细滑块数据） */
 export interface IEqState {
-    /** 5 band gains in millibels */
-    bandGains: number[];
-    /** Center frequencies in mHz */
-    centerFreqs: number[];
     currentPreset: number;
     presetNames: string[];
-    bassBoost: number;   // 0-1000
-    virtualizer: number; // 0-1000
-    loudness: number;    // millibels
 }
 
 export const eqStateAtom = atom<IEqState>({
-    bandGains: [0, 0, 0, 0, 0],
-    centerFreqs: [60000, 230000, 910000, 3600000, 14000000],
-    currentPreset: 0,
+    currentPreset: -1,
     presetNames: [],
-    bassBoost: 0,
-    virtualizer: 0,
-    loudness: 0,
 });
-
-export const eqInitializedAtom = atom(false);

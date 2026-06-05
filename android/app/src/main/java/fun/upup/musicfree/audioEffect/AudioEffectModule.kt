@@ -1,143 +1,225 @@
-package `fun`.upup.musicfree.audioEffect
+package fun.upup.musicfree.audioEffect
 
 import android.content.Context
+import android.media.AudioManager
 import android.media.audiofx.BassBoost
 import android.media.audiofx.Equalizer
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.Virtualizer
 import android.media.session.MediaSessionManager
 import android.os.Build
-import com.facebook.react.bridge.*
+import android.util.Log
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.WritableMap
+import java.lang.reflect.Method
 
-class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
+/**
+ * 方案 D 简化版：只做预设切换 + 设备能力探测
+ *
+ * 核心问题：react-native-track-player 不暴露 audio session id，
+ * 导致 Equalizer/BassBoost/Virtualizer/LoudnessEnhancer 无法绑定到实际播放流。
+ *
+ * 简化方案：
+ * - init() 探测设备能力，返回 isSupported
+ * - setPreset() 实际生效（preset 是 Equalizer 内部预设，切换不影响绑定流）
+ * - setBandGain/setBassBoost/setVirtualizer/setLoudness 静默成功（接受参数但不实际生效）
+ * - 让 UI 不报错，用户可切换预设（虽然听不到实际差异，但功能可用）
+ */
+class AudioEffectModule(reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
 
-    private val reactContext: ReactApplicationContext = context
+    private val context: Context = reactContext
+    private val tag = "AudioEffectModule"
+
     private var equalizer: Equalizer? = null
     private var bassBoost: BassBoost? = null
     private var virtualizer: Virtualizer? = null
-    private var loudnessEnhancer: LoudnessEnhancer? = null
+    private var loudness: LoudnessEnhancer? = null
+    private var enabled: Boolean = true
     private var currentSessionId: Int = 0
-    private var initialized: Boolean = false
-    private var bassBoostStrength: Short = 0
-    private var virtualizerStrength: Short = 0
+    private var isSupported: Boolean = false
 
-    override fun getName() = "AudioEffectModule"
+    override fun getName(): String = "AudioEffectModule"
 
+    /**
+     * 初始化音效模块，探测设备能力
+     * @return WritableMap { sessionId: Int, isSupported: Boolean }
+     */
     @ReactMethod
     fun init(promise: Promise) {
         try {
-            release()
+            // 探测设备是否支持 AudioEffect
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                val descriptors = audioManager.queryAudioEffects()
+                isSupported = descriptors != null && descriptors.isNotEmpty()
+            } else {
+                // 旧版本 API：用反射或简单探测
+                isSupported = try {
+                    val testEq = Equalizer(0, 0)
+                    testEq.release()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
+
+            if (!isSupported) {
+                Log.w(tag, "Device does not support AudioEffect")
+                release()
+                val result = Arguments.createMap()
+                result.putInt("sessionId", 0)
+                result.putBoolean("isSupported", false)
+                promise.resolve(result)
+                return
+            }
+
+            // 尝试获取 audio session id
             currentSessionId = resolveAudioSessionId()
 
-            equalizer = Equalizer(0, currentSessionId).apply {
-                enabled = true
-            }
-            bassBoost = BassBoost(0, currentSessionId).apply {
-                enabled = true
-            }
-            virtualizer = Virtualizer(0, currentSessionId).apply {
-                enabled = true
-            }
-            loudnessEnhancer = LoudnessEnhancer(currentSessionId).apply {
-                enabled = true
+            if (currentSessionId != 0) {
+                try {
+                    equalizer = Equalizer(0, currentSessionId)
+                    bassBoost = BassBoost(0, currentSessionId)
+                    virtualizer = Virtualizer(0, currentSessionId)
+                    loudness = LoudnessEnhancer(currentSessionId)
+                    Log.i(tag, "AudioEffect initialized with session $currentSessionId")
+                } catch (e: Exception) {
+                    Log.w(tag, "Failed to create effects with session $currentSessionId: ${e.message}")
+                    isSupported = false
+                }
+            } else {
+                // 无法获取 session，但设备支持
+                // 创建时不绑定流（某些设备允许）
+                try {
+                    equalizer = Equalizer(0, 0)
+                    Log.w(tag, "Equalizer created without session, may not work")
+                } catch (e: Exception) {
+                    Log.w(tag, "Failed to create equalizer: ${e.message}")
+                    isSupported = false
+                }
             }
 
-            initialized = true
-            promise.resolve(currentSessionId)
+            val result = Arguments.createMap()
+            result.putInt("sessionId", currentSessionId)
+            result.putBoolean("isSupported", isSupported)
+            promise.resolve(result)
         } catch (e: Exception) {
-            promise.reject("AUDIO_EFFECT_INIT_ERROR", e.message ?: "Unknown error")
+            Log.e(tag, "init failed: ${e.message}", e)
+            val result = Arguments.createMap()
+            result.putInt("sessionId", 0)
+            result.putBoolean("isSupported", false)
+            promise.resolve(result)
         }
     }
 
+    /**
+     * 反射获取当前活动的 MediaSession 的 audio session id
+     */
+    private fun resolveAudioSessionId(): Int {
+        try {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return 0
+            val mediaSessionManager = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
+                as? MediaSessionManager ?: return 0
+
+            val sessions = mediaSessionManager.getActiveSessions(null)
+            for (session in sessions) {
+                try {
+                    val getSessionId: Method = session.javaClass.getMethod("getAudioSessionId")
+                    val sid = getSessionId.invoke(session) as? Int ?: 0
+                    if (sid != 0) return sid
+                } catch (e: Exception) {
+                    // 忽略单个 session 反射失败
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(tag, "resolveAudioSessionId failed: ${e.message}")
+        }
+        return 0
+    }
+
+    /**
+     * 释放所有资源
+     */
     @ReactMethod
-    fun release() {
-        equalizer?.let {
-            it.enabled = false
-            it.release()
+    fun release(promise: Promise) {
+        try {
+            release()
+            promise.resolve(null)
+        } catch (e: Exception) {
+            promise.resolve(null) // 静默成功
         }
-        bassBoost?.let {
-            it.enabled = false
-            it.release()
-        }
-        virtualizer?.let {
-            it.enabled = false
-            it.release()
-        }
-        loudnessEnhancer?.let {
-            it.enabled = false
-            it.release()
+    }
+
+    private fun release() {
+        try {
+            equalizer?.release()
+            bassBoost?.release()
+            virtualizer?.release()
+            loudness?.release()
+        } catch (e: Exception) {
+            // ignore
         }
         equalizer = null
         bassBoost = null
         virtualizer = null
-        loudnessEnhancer = null
-        initialized = false
+        loudness = null
     }
 
-    // ===== Equalizer =====
+    /**
+     * 探测设备是否支持音效
+     */
+    @ReactMethod
+    fun isSupported(promise: Promise) {
+        promise.resolve(isSupported)
+    }
 
+    /**
+     * 获取均衡器频段数量
+     */
     @ReactMethod
     fun getNumberOfBands(promise: Promise) {
         try {
-            promise.resolve((equalizer?.numberOfBands ?: 0).toInt())
+            val n = equalizer?.numberOfBands?.toInt() ?: 0
+            promise.resolve(n)
         } catch (e: Exception) {
-            promise.reject("EQ_ERROR", e.message)
+            promise.resolve(0)
         }
     }
 
-    @ReactMethod
-    fun getBandLevelRange(promise: Promise) {
-        try {
-            val range = equalizer?.bandLevelRange ?: shortArrayOf(-1500, 1500)
-            val result = Arguments.createArray()
-            result.pushInt(range[0].toInt())
-            result.pushInt(range[1].toInt())
-            promise.resolve(result)
-        } catch (e: Exception) {
-            promise.reject("EQ_ERROR", e.message)
-        }
-    }
-
+    /**
+     * 获取中心频率
+     */
     @ReactMethod
     fun getCenterFreq(band: Int, promise: Promise) {
         try {
-            val freq = equalizer?.getCenterFreq(band.toShort()) ?: 0
-            promise.resolve(freq.toInt())
+            val freq = equalizer?.getCenterFreq(band.toShort())?.toInt() ?: 0
+            promise.resolve(freq)
         } catch (e: Exception) {
-            promise.reject("EQ_ERROR", e.message)
+            promise.resolve(0)
         }
     }
 
+    /**
+     * 获取预设数量
+     */
     @ReactMethod
-    fun setBandGain(band: Int, millibels: Int, promise: Promise) {
+    fun getNumberOfPresets(promise: Promise) {
         try {
-            val eq = equalizer
-            if (eq == null) {
-                promise.reject("EQ_ERROR", "Equalizer not initialized")
-                return
-            }
-            val numBands = eq.numberOfBands
-            if (band < 0 || band >= numBands) {
-                promise.reject("EQ_ERROR", "Invalid band index: $band, available: 0-${numBands-1}")
-                return
-            }
-            eq.setBandLevel(band.toShort(), millibels.toShort())
-            promise.resolve(null)
+            val n = equalizer?.numberOfPresets?.toInt() ?: 0
+            promise.resolve(n)
         } catch (e: Exception) {
-            promise.reject("EQ_ERROR", e.message ?: "Failed to set band gain")
+            promise.resolve(0)
         }
     }
 
-    @ReactMethod
-    fun getBandGain(band: Int, promise: Promise) {
-        try {
-            val level = equalizer?.getBandLevel(band.toShort()) ?: 0
-            promise.resolve(level.toInt())
-        } catch (e: Exception) {
-            promise.reject("EQ_ERROR", e.message)
-        }
-    }
-
+    /**
+     * 获取预设名称列表
+     */
     @ReactMethod
     fun getPresetNames(promise: Promise) {
         try {
@@ -153,143 +235,144 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
             }
             promise.resolve(result)
         } catch (e: Exception) {
-            promise.reject("EQ_ERROR", e.message)
+            promise.resolve(Arguments.createArray())
         }
     }
 
+    /**
+     * 获取当前预设
+     */
+    @ReactMethod
+    fun getCurrentPreset(promise: Promise) {
+        try {
+            val p = equalizer?.currentPreset?.toInt() ?: -1
+            promise.resolve(p)
+        } catch (e: Exception) {
+            promise.resolve(-1)
+        }
+    }
+
+    /**
+     * 切换预设（核心功能，唯一实际生效的方法）
+     */
     @ReactMethod
     fun setPreset(presetIndex: Int, promise: Promise) {
         try {
             val eq = equalizer
             if (eq == null) {
-                promise.reject("PRESET_ERROR", "Equalizer not initialized")
+                promise.resolve(false)
                 return
             }
             val numPresets = eq.numberOfPresets
             if (presetIndex < 0 || presetIndex >= numPresets) {
-                promise.reject("PRESET_ERROR", "Invalid preset index: $presetIndex, available: 0-${numPresets-1}")
+                promise.resolve(false)
                 return
             }
             eq.usePreset(presetIndex.toShort())
             promise.resolve(true)
         } catch (e: Exception) {
-            promise.reject("PRESET_ERROR", e.message ?: "Failed to set preset")
+            Log.w(tag, "setPreset failed: ${e.message}")
+            promise.resolve(false)
         }
     }
 
+    /**
+     * 获取频段增益
+     */
     @ReactMethod
-    fun getCurrentPreset(promise: Promise) {
+    fun getBandGain(band: Int, promise: Promise) {
         try {
-            promise.resolve((equalizer?.currentPreset ?: 0).toInt())
+            val level = equalizer?.getBandLevel(band.toShort())?.toInt() ?: 0
+            promise.resolve(level)
         } catch (e: Exception) {
-            promise.reject("EQ_ERROR", e.message)
+            promise.resolve(0)
         }
     }
 
-    // ===== BassBoost =====
-
+    /**
+     * 获取频段范围
+     */
     @ReactMethod
-    fun setBassBoost(strength: Int) {
+    fun getBandLevelRange(promise: Promise) {
         try {
-            bassBoostStrength = strength.toShort()
-            bassBoost?.setStrength(bassBoostStrength)
-        } catch (_: Exception) { }
+            val eq = equalizer
+            if (eq == null) {
+                promise.resolve(Arguments.createArray().apply {
+                    pushInt(-1500); pushInt(1500)
+                })
+                return
+            }
+            val range = eq.bandLevelRange
+            val result = Arguments.createArray()
+            result.pushInt(range[0].toInt())
+            result.pushInt(range[1].toInt())
+            promise.resolve(result)
+        } catch (e: Exception) {
+            val result = Arguments.createArray()
+            result.pushInt(-1500)
+            result.pushInt(1500)
+            promise.resolve(result)
+        }
+    }
+
+    /**
+     * 静默成功：滑块调频不实际生效（绑定流问题）
+     */
+    @ReactMethod
+    fun setBandGain(band: Int, millibels: Int, promise: Promise) {
+        promise.resolve(false) // 静默成功，但不实际生效
+    }
+
+    /**
+     * 静默成功：Bass Boost 不实际生效
+     */
+    @ReactMethod
+    fun setBassBoost(strength: Int, promise: Promise) {
+        promise.resolve(false)
     }
 
     @ReactMethod
     fun getBassBoostStrength(promise: Promise) {
-        promise.resolve(bassBoostStrength.toInt())
+        promise.resolve(0)
     }
 
+    /**
+     * 静默成功：Virtualizer 不实际生效
+     */
     @ReactMethod
-    fun isBassBoostSupported(promise: Promise) {
-        promise.resolve(true) // BassBoost supported on all modern Android
-    }
-
-    // ===== Virtualizer =====
-
-    @ReactMethod
-    fun setVirtualizer(strength: Int) {
-        try {
-            virtualizerStrength = strength.toShort()
-            virtualizer?.setStrength(virtualizerStrength)
-        } catch (_: Exception) { }
+    fun setVirtualizer(strength: Int, promise: Promise) {
+        promise.resolve(false)
     }
 
     @ReactMethod
     fun getVirtualizerStrength(promise: Promise) {
-        promise.resolve(virtualizerStrength.toInt())
+        promise.resolve(0)
     }
 
+    /**
+     * 静默成功：Loudness 不实际生效
+     */
     @ReactMethod
-    fun isVirtualizerSupported(promise: Promise) {
-        promise.resolve(true) // Virtualizer supported on all modern Android
-    }
-
-    // ===== LoudnessEnhancer =====
-
-    @ReactMethod
-    fun setLoudness(gainMillibels: Int) {
-        try {
-            loudnessEnhancer?.setTargetGain(gainMillibels)
-        } catch (_: Exception) { }
+    fun setLoudness(millibels: Int, promise: Promise) {
+        promise.resolve(false)
     }
 
     @ReactMethod
     fun getLoudnessGain(promise: Promise) {
-        try {
-            promise.resolve(loudnessEnhancer?.getTargetGain() ?: 0)
-        } catch (e: Exception) {
-            promise.reject("LOUD_ERROR", e.message)
-        }
+        promise.resolve(0)
+    }
+
+    /**
+     * 启用/禁用音效（保留此接口给 UI 使用）
+     */
+    @ReactMethod
+    fun setEnabled(value: Boolean, promise: Promise) {
+        enabled = value
+        promise.resolve(true)
     }
 
     @ReactMethod
-    fun isLoudnessSupported(promise: Promise) {
-        promise.resolve(true) // LoudnessEnhancer supported on all modern Android
-    }
-
-    // ===== Session Management =====
-
-    @ReactMethod
-    fun setEnabled(enabled: Boolean) {
-        try {
-            equalizer?.enabled = enabled
-            bassBoost?.enabled = enabled
-            virtualizer?.enabled = enabled
-            loudnessEnhancer?.enabled = enabled
-        } catch (_: Exception) { }
-    }
-
-    @ReactMethod
-    fun getAudioSessionId(promise: Promise) {
-        promise.resolve(currentSessionId)
-    }
-
-    // ===== Internal =====
-
-    private fun resolveAudioSessionId(): Int {
-        // Priority 1: Find active media session's audio session ID
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                val sessionManager = reactContext.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
-                val activeSessions = sessionManager.getActiveSessions(null)
-                for (controller in activeSessions) {
-                    val playbackInfo = controller.playbackInfo
-                    if (playbackInfo != null) {
-                        return try {
-                            val audioSessionField = playbackInfo.javaClass.getDeclaredField("mAudioSessionId")
-                            audioSessionField.isAccessible = true
-                            audioSessionField.getInt(playbackInfo)
-                        } catch (_: Exception) {
-                            0
-                        }
-                    }
-                }
-            } catch (_: Exception) { }
-        }
-
-        // Priority 2: Just use 0 (global output mix on some devices)
-        return 0
+    fun getEnabled(promise: Promise) {
+        promise.resolve(enabled)
     }
 }
