@@ -109,10 +109,23 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
     }
 
     @ReactMethod
-    fun setBandGain(band: Int, millibels: Int) {
+    fun setBandGain(band: Int, millibels: Int, promise: Promise) {
         try {
-            equalizer?.setBandLevel(band.toShort(), millibels.toShort())
-        } catch (_: Exception) { }
+            val eq = equalizer
+            if (eq == null) {
+                promise.reject("EQ_ERROR", "Equalizer not initialized")
+                return
+            }
+            val numBands = eq.numberOfBands
+            if (band < 0 || band >= numBands) {
+                promise.reject("EQ_ERROR", "Invalid band index: $band, available: 0-${numBands-1}")
+                return
+            }
+            eq.setBandLevel(band.toShort(), millibels.toShort())
+            promise.resolve(null)
+        } catch (e: Exception) {
+            promise.reject("EQ_ERROR", e.message ?: "Failed to set band gain")
+        }
     }
 
     @ReactMethod
@@ -145,10 +158,23 @@ class AudioEffectModule(context: ReactApplicationContext) : ReactContextBaseJava
     }
 
     @ReactMethod
-    fun setPreset(presetIndex: Int) {
+    fun setPreset(presetIndex: Int, promise: Promise) {
         try {
-            equalizer?.usePreset(presetIndex.toShort())
-        } catch (_: Exception) { }
+            val eq = equalizer
+            if (eq == null) {
+                promise.reject("PRESET_ERROR", "Equalizer not initialized")
+                return
+            }
+            val numPresets = eq.numberOfPresets
+            if (presetIndex < 0 || presetIndex >= numPresets) {
+                promise.reject("PRESET_ERROR", "Invalid preset index: $presetIndex, available: 0-${numPresets-1}")
+                return
+            }
+            eq.usePreset(presetIndex.toShort())
+            promise.resolve(true)
+        } catch (e: Exception) {
+            promise.reject("PRESET_ERROR", e.message ?: "Failed to set preset")
+        }
     }
 
     @ReactMethod

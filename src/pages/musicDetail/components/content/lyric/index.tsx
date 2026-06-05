@@ -59,6 +59,7 @@ export default function Lyric(props: IProps) {
         useDelayFalsy<number | undefined>(undefined, 2000);
     const musicState = useMusicState();
     const { t } = useI18N();
+    const colors = useColors();
 
     const [layout, setLayout] = useState<LayoutRectangle>();
 
@@ -226,7 +227,7 @@ export default function Lyric(props: IProps) {
             <GestureDetector gesture={tapGesture}>
                 <View style={globalStyle.fwflex1}>
                     {loading ? (
-                        <Loading color="white" />
+                        <Loading color={colors.text} />
                     ) : lyrics?.length ? (
                         <FlatList
                             ref={_ => {

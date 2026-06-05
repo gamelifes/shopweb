@@ -7,12 +7,14 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import rpx from "@/utils/rpx";
 import IconButton from "@/components/base/iconButton";
+import useColors from "@/hooks/useColors";
 
 export default function NavBar() {
     const navigation = useNavigation<any>();
     const { id = "favorite" } = useParams<"local-sheet-detail">();
     const musicSheet = useSheetItem(id);
     const { t } = useI18N();
+    const colors = useColors();
 
     const showMenu = () => {
         // Open edit sheet info dialog directly
@@ -26,11 +28,11 @@ export default function NavBar() {
             <IconButton
                 name="arrow-left"
                 sizeType="normal"
-                color="white"
+                color={colors.appBarText}
                 style={styles.button}
                 onPress={() => navigation.goBack()}
             />
-            <Text style={styles.title} numberOfLines={1}>
+            <Text style={[styles.title, { color: colors.appBarText }]} numberOfLines={1}>
                 {musicSheet?.title ?? t("common.sheet")}
             </Text>
             <TouchableOpacity
@@ -39,7 +41,7 @@ export default function NavBar() {
                 <IconButton
                     name="ellipsis-vertical"
                     sizeType="normal"
-                    color="rgba(255,255,255,0.7)"
+                    color={colors.appBarText}
                     style={styles.button}
                     onPress={showMenu}
                 />
@@ -71,7 +73,6 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: rpx(17),
         fontWeight: "700",
-        color: "white",
         textAlign: "center",
         paddingHorizontal: rpx(12),
     },

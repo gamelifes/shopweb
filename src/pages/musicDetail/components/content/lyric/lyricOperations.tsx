@@ -37,7 +37,7 @@ export default function LyricOperations(props: ILyricOperationsProps) {
             <Icon
                 name="font-size"
                 size={iconSizeConst.normal}
-                color="white"
+                color={colors.appBarText}
                 onPress={() => {
                     showPanel("SetFontSize", {
                         defaultSelect: detailFontSize ?? 1,
@@ -51,7 +51,7 @@ export default function LyricOperations(props: ILyricOperationsProps) {
             <Icon
                 name="arrows-left-right"
                 size={iconSizeConst.normal}
-                color="white"
+                color={colors.appBarText}
                 onPress={() => {
                     const currentMusicItem = TrackPlayer.currentMusic;
 
@@ -73,7 +73,7 @@ export default function LyricOperations(props: ILyricOperationsProps) {
                 height={iconSizeConst.normal}
                 opacity={!hasTranslation ? 0.2 : showTranslation ? 1 : 0.5}
                 color={
-                    showTranslation && hasTranslation ? colors.primary : "white"
+                    showTranslation && hasTranslation ? colors.primary : colors.appBarText
                 }
                 // style={}
                 onPress={() => {

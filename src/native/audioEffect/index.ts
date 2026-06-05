@@ -7,10 +7,10 @@ interface IAudioEffect extends NativeModule {
     getNumberOfBands: () => Promise<number>;
     getBandLevelRange: () => Promise<number[]>;
     getCenterFreq: (band: number) => Promise<number>;
-    setBandGain: (band: number, millibels: number) => void;
+    setBandGain: (band: number, millibels: number) => Promise<void>;
     getBandGain: (band: number) => Promise<number>;
     getPresetNames: () => Promise<string[]>;
-    setPreset: (presetIndex: number) => void;
+    setPreset: (presetIndex: number) => Promise<void>;
     getCurrentPreset: () => Promise<number>;
 
     setBassBoost: (strength: number) => void;

@@ -18,6 +18,7 @@ import PanelHeader from "../base/panelHeader";
 import Divider from "@/components/base/divider";
 import AudioEffectNative from "@/native/audioEffect";
 import Color from "color";
+import Toast from "@/utils/toast";
 import {
     soundEffectEnabledAtom,
     eqStateAtom,
@@ -117,7 +118,8 @@ function BandSlider({ freq, value, min, max, onChange }: IBandSliderProps) {
 const bandStyles = StyleSheet.create({
     container: {
         alignItems: "center",
-        marginRight: rpx(8),
+        width: "100%",
+        marginBottom: rpx(12),
     },
     freqLabel: {
         marginBottom: rpx(4),
@@ -126,9 +128,10 @@ const bandStyles = StyleSheet.create({
     },
     sliderArea: {
         alignItems: "center",
+        width: "100%",
     },
     track: {
-        width: rpx(88),
+        width: "100%",
         height: rpx(4),
         borderRadius: rpx(2),
         position: "relative",
@@ -375,24 +378,29 @@ export default function AudioEffect() {
     };
 
     const selectPreset = async (idx: number) => {
-        await AudioEffectNative.setPreset(idx);
-        // 重新读取该预设的所有参数
-        const numBands = await AudioEffectNative.getNumberOfBands();
-        const gains: number[] = [];
-        for (let i = 0; i < numBands; i++) {
-            gains.push(await AudioEffectNative.getBandGain(i));
+        try {
+            await AudioEffectNative.setPreset(idx);
+            // 重新读取该预设的所有参数
+            const numBands = await AudioEffectNative.getNumberOfBands();
+            const gains: number[] = [];
+            for (let i = 0; i < numBands; i++) {
+                gains.push(await AudioEffectNative.getBandGain(i));
+            }
+            const bass = await AudioEffectNative.getBassBoostStrength();
+            const virt = await AudioEffectNative.getVirtualizerStrength();
+            const loud = await AudioEffectNative.getLoudnessGain();
+            setEqState(prev => ({
+                ...prev,
+                currentPreset: idx,
+                bandGains: gains,
+                bassBoost: bass,
+                virtualizer: virt,
+                loudness: loud,
+            }));
+        } catch (e) {
+            console.warn(`setPreset(${idx}) failed:`, e);
+            // 可以添加 toast 提示用户
         }
-        const bass = await AudioEffectNative.getBassBoostStrength();
-        const virt = await AudioEffectNative.getVirtualizerStrength();
-        const loud = await AudioEffectNative.getLoudnessGain();
-        setEqState(prev => ({
-            ...prev,
-            currentPreset: idx,
-            bandGains: gains,
-            bassBoost: bass,
-            virtualizer: virt,
-            loudness: loud,
-        }));
     };
 
     const onBandGain = async (band: number, value: number) => {
@@ -405,6 +413,7 @@ export default function AudioEffect() {
             });
         } catch (e) {
             console.warn(`setBandGain(${band}, ${value}) failed:`, e);
+            Toast.error(`频段调节失败`);
         }
     };
 
@@ -478,9 +487,9 @@ export default function AudioEffect() {
                     {/* Frequency Bands - design aligned */}
                     <View style={styles.section}>
                         <ThemeText fontSize="subTitle" fontWeight="semibold" style={styles.sectionLabel}>
-                            频率调节
+                             频率调节
                         </ThemeText>
-                        <View style={styles.bandRow}>
+                        <View style={styles.bandColumn}>
                             {eqState.centerFreqs.map((freq, idx) => (
                                 <BandSlider
                                     key={idx}

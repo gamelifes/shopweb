@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import IconButton from "@/components/base/iconButton";
 import { useCurrentMusic } from "@/core/trackPlayer";
 import { showPanel } from "@/components/panels/usePanel";
+import useColors from "@/hooks/useColors";
 
 /**
  * Simplified NavBar matching the design's md-nav:
@@ -13,13 +14,14 @@ import { showPanel } from "@/components/panels/usePanel";
 export default function NavBar() {
     const navigation = useNavigation();
     const musicItem = useCurrentMusic();
+    const colors = useColors();
 
     return (
         <View style={styles.container}>
             <IconButton
                 name="arrow-left"
                 sizeType={"normal"}
-                color="white"
+                color={colors.appBarText}
                 style={styles.button}
                 onPress={() => {
                     navigation.goBack();
@@ -28,19 +30,19 @@ export default function NavBar() {
             <View style={styles.info}>
                 <Text
                     numberOfLines={1}
-                    style={styles.title}>
+                    style={[styles.title, { color: colors.appBarText }]}>
                     {musicItem?.title ?? "--"}
                 </Text>
                 <Text
                     numberOfLines={1}
-                    style={styles.artist}>
+                    style={[styles.artist, { color: colors.appBarText }]}>
                     {musicItem?.artist}
                 </Text>
             </View>
             <IconButton
                 name="ellipsis-vertical"
                 sizeType={"normal"}
-                color="rgba(255,255,255,0.7)"
+                color={colors.appBarText}
                 style={styles.button}
                 onPress={() => {
                     if (musicItem) {
@@ -76,13 +78,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: rpx(16),
         fontWeight: "700",
-        color: "white",
         textAlign: "center",
         includeFontPadding: false,
     },
     artist: {
         fontSize: rpx(12),
-        color: "rgba(255,255,255,0.65)",
         marginTop: rpx(1),
         textAlign: "center",
         includeFontPadding: false,

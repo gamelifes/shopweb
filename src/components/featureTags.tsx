@@ -70,25 +70,25 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: "row",
         justifyContent: "center",
-        gap: rpx(8),
-        paddingVertical: rpx(8),
+        gap: rpx(12),
+        paddingVertical: rpx(10),
         paddingHorizontal: rpx(20),
         flexShrink: 0,
     },
     tag: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: rpx(14),
-        paddingVertical: rpx(5),
+        paddingHorizontal: rpx(18),
+        paddingVertical: rpx(8),
         borderRadius: rpx(9999),
-        borderWidth: 1,
+        borderWidth: 1.5,
     },
     tagText: {
-        fontSize: rpx(22),
-        fontWeight: "500",
+        fontSize: rpx(24),
+        fontWeight: "600",
     },
     arrow: {
-        fontSize: rpx(18),
+        fontSize: rpx(20),
         marginLeft: rpx(4),
     },
 });
